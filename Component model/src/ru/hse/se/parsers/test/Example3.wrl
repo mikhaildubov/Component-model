@@ -1,0 +1,144 @@
+#VRML V2.0 utf8
+
+PROTO Candy
+[field SFColor figColor  .8 .4 .7
+ exposedField SFRotation figRotation 1 0 0 0
+ exposedField SFVec3f center 0 0 0]
+{
+	Group
+	{
+		children
+		[
+			Transform
+			{
+				translation IS center
+				rotation IS figRotation
+				
+				children
+				[
+					Shape
+					{
+						appearance Appearance
+						{
+							material Material { diffuseColor IS figColor }
+						}
+						geometry Cylinder
+						{
+							height		3
+							radius		1
+						}
+					}
+					
+					Transform
+					{
+						translation 0 -1.9 0
+						rotation    0 0 1  3.14159
+						
+						children
+						Shape
+						{
+							appearance Appearance
+							{
+								material Material { diffuseColor IS figColor }
+							}
+							geometry Cone
+							{
+								height          0.8
+								bottomRadius    1
+							}
+						}
+					}
+					
+					Transform
+					{
+						translation 0 -2.5 0
+						
+						children
+						Shape
+						{
+							appearance Appearance
+							{
+								material Material { diffuseColor IS figColor }
+							}
+							geometry Cone
+							{
+								height          0.4
+								bottomRadius    0.5
+							}
+						}
+					}
+					
+					Transform
+					{
+						translation 0 1.9 0
+						
+						children
+						Shape
+						{
+							appearance Appearance
+							{
+								material Material { diffuseColor IS figColor }
+							}
+							geometry Cone
+							{
+								height          0.8
+								bottomRadius    1
+							}
+						}
+					}
+					
+					Transform
+					{
+						translation 0 2.5 0
+						rotation    0 0 1  3.14159
+						
+						children
+						Shape
+						{
+							appearance Appearance
+							{
+								material Material { diffuseColor IS figColor }
+							}
+							geometry Cone
+							{
+								height          0.4
+								bottomRadius    0.5
+							}
+						}
+					}
+				]
+			}
+		]
+	}
+	
+}
+
+DEF ts TimeSensor
+{
+	cycleInterval	5
+	enabled			TRUE
+	loop			TRUE
+}
+
+DEF script Script
+{
+  # Для совместимости
+  directOutput TRUE
+  mustEvaluate TRUE
+
+  eventIn SFFloat fraction_changed
+  eventOut SFRotation rotation_changed
+
+  url "Sample.class"
+}
+
+# Собственно, рисуем
+DEF candy Candy
+{
+	figColor .3 .4 .9
+	center 1 1 -1
+}
+
+# Связь со скриптом (после создания экземпляра Candy!!!)
+ROUTE ts.fraction_changed TO script.fraction_changed
+ROUTE script.rotation_changed TO candy.figRotation

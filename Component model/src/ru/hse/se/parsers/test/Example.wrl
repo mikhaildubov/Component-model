@@ -1,0 +1,22 @@
+Shape
+{
+  appearance Appearance
+  {
+    material DEF mat Material
+    {
+      diffuseColor 1 0 0
+    } # Material
+  } # Appearance
+  geometry Sphere
+  {
+  } # Sphere
+} # Shape
+
+Shape {
+   appearance DEF app Appearance {
+      material Material {
+      }
+   }
+   geometry DEF ololo Box {
+   }
+}
