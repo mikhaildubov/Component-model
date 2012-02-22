@@ -17,6 +17,6 @@ Shape {
       material Material {
       }
    }
-   geometry DEF ololo Box {
+   geometry DEF bx Box {
    }
 }
