@@ -14,7 +14,8 @@ import java.util.ArrayList;
  */
 public abstract class Parser {
 
-    public ArrayList<Node> parse(InputStreamReader reader) {
+    public ArrayList<Node> parse(InputStreamReader reader)
+    							throws SyntaxError, IOException {
 
         tokenizer = new StreamTokenizer(new BufferedReader(reader));
         
@@ -28,8 +29,7 @@ public abstract class Parser {
     }
 
     protected abstract void setUpTokenizer();
-    protected abstract ArrayList<Node> parseScene();
-    public abstract String getErrorMessage();
+    protected abstract ArrayList<Node> parseScene() throws SyntaxError, IOException;
 
     protected StreamTokenizer tokenizer;
 }

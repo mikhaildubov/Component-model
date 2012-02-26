@@ -49,33 +49,15 @@ public class VRMLParser extends Parser {
      *      statements                  *
      ************************************/
     @Override
-    protected ArrayList<Node> parseScene() {
+    protected ArrayList<Node> parseScene() throws SyntaxError, IOException {
         
-        if (init()) { // Initialization - to read the first token
-        	
-        	// !!! The entry point !!!
-        	
-        	parseStatements();
-        	
-        	// As a result - the filled resultingNodes array.
-        	// If there was an error during the parsing process,
-        	// syntaxError is equal to true.
-        	
-        } else {
-        	
-        	// Something went bad with the file (no first token found)
-        	reportError("The input file is not a valid VRML file.");
-        	return null;
-        }
-        
-        if (syntaxError) {
-            // TODO: Report syntax error (or do it in methods?)
-            return null;
-        }
-        
-        // Everything is OK, return the result.
-
-        return resultingNodes;
+    	init(); // Initialization - to read the first token
+	        	
+    	// !!! The entry point !!!
+    	parseStatements();
+        // As a result - the filled resultingNodes array.
+    	
+    	return resultingNodes;
     }
     
     
@@ -129,9 +111,9 @@ public class VRMLParser extends Parser {
     	// In the "DEF" production, parseNode() will store
     	// the node in the hash table by its id.
     	
-        return (match("DEF") && getId() && parseNode()) ||
+        return (lookahead("DEF") && match("DEF") && matchId() && parseNode()) ||
         
-               (match("USE") && getId() && instantiateNodeById()) ||
+               (lookahead("USE") && match("USE") && matchId() && instantiateNodeById()) ||
                           
                (parseNode());
     }
@@ -147,10 +129,10 @@ public class VRMLParser extends Parser {
         
     	// ! NB: The order is essential, because of the FIRST elements
     	
-        return (match("Script") &&
+        return (lookahead("Script") && match("Script") &&
                     match("{") && parseScriptBody() && match("}")) ||
         
-               (getType() && instantiateNode() &&
+               (lookaheadId() && matchTypeId() && instantiateNode() &&
                     match("{") && parseNodeBody() && match("}"));
     }
     
@@ -185,11 +167,12 @@ public class VRMLParser extends Parser {
         
                (parseProtoStatement()) ||
                           
-               (getFieldId() &&
+               (lookaheadId() && matchFieldId() &&
                        
-                    (match("IS") && getId() /* && ??? -> 3 productions!!! */) ||
+                    (lookahead("IS") && match("IS") && matchId()
+                    		/* && ??? -> 3 productions!!! */) ||
                        
-                    (getValueAndSetField()));
+                    (matchFieldValueAndSetField()));
     }
     
     
@@ -209,9 +192,9 @@ public class VRMLParser extends Parser {
      ************************************/
     private boolean parseProtoStatement() {
         
-        return (match("PROTO") /* && ...Later...*/) ||
+        return (lookahead("PROTO") && match("PROTO") /* && ...Later...*/) ||
         
-               (match("EXTERNPROTO") /* && ...Later...*/);
+               (lookahead("EXTERNPROTO") && match("EXTERNPROTO") /* && ...Later...*/);
     }
     
     /************************************
@@ -223,7 +206,7 @@ public class VRMLParser extends Parser {
      ************************************/
     private boolean parseRouteStatement() {
         
-        return (match("ROUTE") /* && ...Later...*/);
+        return (lookahead("ROUTE") && match("ROUTE") /* && ...Later...*/);
     }
     
     /************************************
@@ -249,15 +232,20 @@ public class VRMLParser extends Parser {
     
     /** Initializes the parser by reading the first
      * token and storing it in the lookahead variable.
-     * @return
      */
-    private boolean init() {
+    private void init() throws IOException {
     	
     	initFields();
     	
     	nextToken();
                 
-        return (lookahead != null);
+        if (lookahead == null) {
+        	throw new IOException();
+        }
+    }
+    
+    private boolean lookahead(String token) {
+    	return (lookahead != null && token != null && lookahead.equals(token));
     }
     
     /**
@@ -267,19 +255,21 @@ public class VRMLParser extends Parser {
      * Note: VRML is case sensitive.
      * 
      * @param token Token to be matched
+     * @throws SyntaxError if token isn't matched
      * @return true if token is matched and the next token is read,
-     *         false otherwise
      */
-    private boolean match(String token) {
+    private boolean match(String token) throws SyntaxError {
         
         if(token.equals(lookahead)) {
 
             nextToken();
             
             return true;
+            
+        } else {
+        	
+        	throw new SyntaxError("Expected '" + token + "'");
         }
-        
-        return false; // (reason: syntax error or wrong alternative)
     }
     
     /**
@@ -303,12 +293,12 @@ public class VRMLParser extends Parser {
      * @param id
      * @return
      */
-    private boolean checkId(String id) {
+    private boolean lookaheadId() {
     	
     	// TODO: More Id checking (see rules)
     	
-        return (id != null) && (id != "") &&
-                   Character.isLetter(id.charAt(0));
+        return (lookahead != null) && (lookahead != "") &&
+                   Character.isLetter(lookahead.charAt(0));
     }
     
     /**
@@ -316,50 +306,57 @@ public class VRMLParser extends Parser {
      *
      * @return the Id symbol
      */
-    private boolean getId() {
+    private boolean matchId() {
     	
-    	boolean success = checkId(lookahead);
-       
-    	if (success) {
+    	if(lookaheadId()) {
     		
     		currentId = lookahead;
         	nextToken();
+        	
+        	return true;
+        	
+    	} else {
+    		
+    		throw new SyntaxError("'" + lookahead + "' is not a valid id");
     	}
-    	
-        return success;
     }
     
     /**
      * Reads the next token that represents a fieldId
      * (which is also an Id), and pushes it into the stack.
      */
-    private boolean getFieldId() {
+    private boolean matchFieldId() {
         
-        boolean success = checkId(lookahead);
-        
-        if (success) {
+    	if(lookaheadId()) {
+    		
             currentField.push(lookahead);
             nextToken();
-        }
-        
-        return success;
+        	
+        	return true;
+        	
+    	} else {
+    		
+    		throw new SyntaxError("'" + lookahead + "' is not a valid id");
+    	}
     }
     
     /**
      * Reads the next token that represents a type
      * (which is also an Id).
      */
-    private boolean getType() {
+    private boolean matchTypeId() {
         
-    	boolean success = checkId(lookahead);
-        
-    	if (success) {
+    	if(lookaheadId()) {
     		
     		currentType = lookahead;
         	nextToken();
+        	
+        	return true;
+        	
+    	} else {
+    		
+    		throw new SyntaxError("'" + lookahead + "' is not a valid id");
     	}
-    	
-        return success;
     }
     
     /**
@@ -440,8 +437,8 @@ System.out.println("Instantiated existing Node" + (currentId == null ? "" : (" '
 
 			return true;
     	} else {
-    		// Report syntax error
-    		return false;
+
+    		throw new SyntaxError("Node named '" + currentId + "' not declared.");
     	}
     }
     
@@ -462,7 +459,7 @@ System.out.println();
      * in the appropriate Bean. Works both for primitive types
      * and for Node types (recursively).
      */
-    private boolean getValueAndSetField() {
+    private boolean matchFieldValueAndSetField() {
         
         // ! NB: Here, it was NOT the grammar which gave the information
         //       on the type of the field. To retrieve it, reflection was used.
@@ -485,8 +482,9 @@ System.out.println();
              *     nodeStatement |  *
              *     NULL             *
              ************************/
-            if (match("NULL")) {
+            if (lookahead("NULL")) {
             	
+            	match("NULL");
             	value = null;
             	
             } else {
@@ -536,13 +534,14 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
         
         SFBool res = new SFBool();
         
-        if (match("TRUE")) {
+        if (lookahead("TRUE")) {
+        	match("TRUE");
             res.value = true;
-        } else if (match("FALSE")) {
+        } else if (lookahead("FALSE")) {
+        	match("FALSE");
             res.value = false;
         } else {
-            res = null;
-            syntaxError = true;
+        	throw new SyntaxError("Expected 'TRUE' or 'FALSE'");
         }
         
         return res;
@@ -567,7 +566,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
      * Stores the value as a value of type double.
      */
     private double parseFloat() {
-        // TODO: Type checking (check that it was really float, but not a string)
+        // TODO: Better type checking (check that it was really float, but not a string)
         
         double res = numahead;
         
@@ -575,25 +574,8 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
         
         return res;
     }
+   
     
-    
-    
-    
-    /*************************************************************
-     *                     Error processing.                     *
-     *************************************************************/
-    
-
-    private void reportError(String msg) {
-    	errorMessage = msg;
-    }
-    
-    @Override
-    public String getErrorMessage() {
-    	return errorMessage;
-    }
-    
-
     
     
     /*************************************************************
@@ -606,7 +588,6 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
     private void initFields() {
     	resultingNodes = new ArrayList<Node>();  
         nodesTable = new HashMap<String, Node>();
-        syntaxError = false;
         currentNodes = new Stack<Node>();
         currentField = new Stack<String>();
         currentId = null;
@@ -620,11 +601,6 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
      * for their further use in USE statements.
      */
     private HashMap<String, Node> nodesTable;
-    
-    /* Determines if there was a syntax error */
-    private boolean syntaxError;
-    /* Contains the error message. */
-    private String errorMessage;
     
     /* current Token */
     private String lookahead;
