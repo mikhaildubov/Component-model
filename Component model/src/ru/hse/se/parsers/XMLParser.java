@@ -19,4 +19,8 @@ public class XMLParser extends Parser {
 
         return nodes;
     }
+    
+    public String getErrorMessage() {
+    	return "";
+    }
 }

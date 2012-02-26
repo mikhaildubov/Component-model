@@ -21,6 +21,7 @@ public abstract class Parser {
         // TODO: Encoding issue??? *.wrl UTF8 -> bad; ANSI -> ok
         
         setUpTokenizer();
+        
         ArrayList<Node> sceneGraph = parseScene();
 
         return sceneGraph;
@@ -28,6 +29,7 @@ public abstract class Parser {
 
     protected abstract void setUpTokenizer();
     protected abstract ArrayList<Node> parseScene();
+    public abstract String getErrorMessage();
 
     protected StreamTokenizer tokenizer;
 }

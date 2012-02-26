@@ -1,4 +1,4 @@
-Shape
+DEF shape1 Shape
 {
   appearance Appearance
   {
@@ -20,3 +20,5 @@ Shape {
    geometry DEF bx Box {
    }
 }
+
+USE shape1

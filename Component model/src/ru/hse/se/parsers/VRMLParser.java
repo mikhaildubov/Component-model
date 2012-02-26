@@ -6,6 +6,7 @@ import ru.hse.se.types.*;
 import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Stack;
 
 /**
@@ -50,29 +51,29 @@ public class VRMLParser extends Parser {
     @Override
     protected ArrayList<Node> parseScene() {
         
-        resultingNodes = new ArrayList<Node>();  
-        syntaxError = false;
-        currentNodes = new Stack<Node>();
-        currentField = new Stack<String>();
-        currentId = null;
-        
         if (init()) { // Initialization - to read the first token
         	
         	// !!! The entry point !!!
         	
-        	// This changes the resultingNodes array
-        	// and also the syntaxError flag.
         	parseStatements();
         	
+        	// As a result - the filled resultingNodes array.
+        	// If there was an error during the parsing process,
+        	// syntaxError is equal to true.
+        	
         } else {
-        	// => Something bad with the file (?)
+        	
+        	// Something went bad with the file (no first token found)
+        	reportError("The input file is not a valid VRML file.");
         	return null;
         }
         
         if (syntaxError) {
-            // TODO: Report syntax error
+            // TODO: Report syntax error (or do it in methods?)
             return null;
         }
+        
+        // Everything is OK, return the result.
 
         return resultingNodes;
     }
@@ -125,9 +126,12 @@ public class VRMLParser extends Parser {
         
     	// ! NB: The order is essential, because of the FIRST elements
     	
-        return (match("DEF") && getId() && parseNode() /*...&& store to the table...*/) ||
+    	// In the "DEF" production, parseNode() will store
+    	// the node in the hash table by its id.
+    	
+        return (match("DEF") && getId() && parseNode()) ||
         
-               (match("USE") /* && ...Later...*/) ||
+               (match("USE") && getId() && instantiateNodeById()) ||
                           
                (parseNode());
     }
@@ -248,8 +252,10 @@ public class VRMLParser extends Parser {
      * @return
      */
     private boolean init() {
-        
-        nextToken();
+    	
+    	initFields();
+    	
+    	nextToken();
                 
         return (lookahead != null);
     }
@@ -395,10 +401,14 @@ public class VRMLParser extends Parser {
             Node node = (Node)(Class.forName(nodesPackageName +
                                  "."+ currentType).newInstance());
             
+            // If there was the "DEF" keyword
             if (currentId != null) {
-                node.setId(currentId); // If there was the "DEF" keyword
+                node.setId(currentId); 
+                // Store the node in the hash table
+                nodesTable.put(currentId, node); 
             }
             
+            // Pushing the node into the stack
             currentNodes.push(node);
             
 System.out.println("Instantiated Node" + (currentId == null ? "" : (" '"+currentId)+"'") + " of type " + currentType);  
@@ -410,6 +420,29 @@ System.out.println("Instantiated Node" + (currentId == null ? "" : (" '"+current
         } catch (Exception e) {
             return false;
         }
+    }
+    
+    /**
+     * Searches for an existing Node Bean in the hash table
+     * by its id and, if found, acts like instantiateNode().
+     */
+    private boolean instantiateNodeById() {
+    	
+    	Node node = nodesTable.get(currentId);
+    	
+    	if (node != null) {
+    		
+    		currentNodes.push(node);
+    		
+System.out.println("Instantiated existing Node" + (currentId == null ? "" : (" '"+currentId)+"'"));  
+    		
+			currentId = null;
+
+			return true;
+    	} else {
+    		// Report syntax error
+    		return false;
+    	}
     }
     
     /**
@@ -489,6 +522,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
     }
     
     
+    
 
     /*************************************************************
      *                   Primitive VRML types.                   *
@@ -543,17 +577,54 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
     }
     
     
+    
+    
+    /*************************************************************
+     *                     Error processing.                     *
+     *************************************************************/
+    
 
+    private void reportError(String msg) {
+    	errorMessage = msg;
+    }
+    
+    @Override
+    public String getErrorMessage() {
+    	return errorMessage;
+    }
+    
+
+    
+    
     /*************************************************************
      *                   (Private fields).                       *
      *************************************************************/
     
+    /**
+     * Initializes the private fields before the parser starts.
+     */
+    private void initFields() {
+    	resultingNodes = new ArrayList<Node>();  
+        nodesTable = new HashMap<String, Node>();
+        syntaxError = false;
+        currentNodes = new Stack<Node>();
+        currentField = new Stack<String>();
+        currentId = null;
+    }
     
     /* The result of scene parsing */
     private ArrayList<Node> resultingNodes;
     
+    /* 
+     * Hash table that stores the named (DEF) nodes
+     * for their further use in USE statements.
+     */
+    private HashMap<String, Node> nodesTable;
+    
     /* Determines if there was a syntax error */
     private boolean syntaxError;
+    /* Contains the error message. */
+    private String errorMessage;
     
     /* current Token */
     private String lookahead;
