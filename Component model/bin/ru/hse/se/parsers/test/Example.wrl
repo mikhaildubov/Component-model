@@ -1,0 +1,24 @@
+DEF shape1 Shape
+{
+  appearance Appearance
+  {
+    material DEF mat Material
+    {
+      diffuseColor -2e-1 -0.2 +0.01
+    } # Material
+  } # Appearance
+  geometry Sphere
+  {
+  } # Sphere
+} # Shape
+
+Shape {
+   appearance    DEF app_1 Appearance {
+      material Material {
+      }
+   }
+   geometry DEF _bx0 Box {
+   }
+}
+
+USE shape1
