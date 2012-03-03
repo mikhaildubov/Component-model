@@ -4,7 +4,7 @@ DEF shape1 Shape
   {
     material DEF mat Material
     {
-      diffuseColor 1 0 0
+      diffuseColor -2e-1 -0.2 +0.01
     } # Material
   } # Appearance
   geometry Sphere
@@ -13,11 +13,11 @@ DEF shape1 Shape
 } # Shape
 
 Shape {
-   appearance DEF app Appearance {
+   appearance    DEF app_1 Appearance {
       material Material {
       }
    }
-   geometry DEF bx Box {
+   geometry DEF _bx0 Box {
    }
 }
 
