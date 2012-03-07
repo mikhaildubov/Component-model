@@ -404,7 +404,6 @@ public class VRMLParser extends Parser {
      *            Building up the JavaBeans components.          *
      *************************************************************/
     
-    
     private static final String nodesPackageName = "ru.hse.se.nodes";
     
     /**
@@ -672,6 +671,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
     /*************************************************************
      *                   (Private fields).                       *
      *************************************************************/
+    
     
     /**
      * Initializes the private fields before the parser starts.
