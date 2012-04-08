@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import ru.hse.se.types.VRMLType;
 
-public class Node extends VRMLType implements Serializable {
+public abstract class Node extends VRMLType implements Serializable {
 
 	public Node() {
 		id = "";

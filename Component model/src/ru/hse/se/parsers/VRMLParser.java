@@ -54,7 +54,6 @@ public class VRMLParser extends Parser {
      *         and http://bit.ly/wF541A for VRML grammar.        *
      *************************************************************/
     
-    
     /************************************
      * vrmlScene ::=                    *
      *      statements                  *
@@ -75,7 +74,6 @@ public class VRMLParser extends Parser {
     /*************************************************************
      *                    The basic grammar.                     *
      *************************************************************/
-    
     
     /************************************
      * statements ::=                   *
@@ -107,7 +105,12 @@ public class VRMLParser extends Parser {
                (parseNodeStatement() && addRootNode());
     }
     
-    /************************************
+    /**
+     * Parses a node and stores the link
+     * to that node on the top of the
+     * 'currentNodes' stack.
+     * 
+     ************************************
      * nodeStatement ::=                *
      *     node |                       *
      *     DEF nodeNameId node |        *
@@ -193,7 +196,6 @@ public class VRMLParser extends Parser {
      *                 PROTO & ROUTE statements.                 *
      *************************************************************/
     
-    
     /************************************
      * protoStatement ::=               *
      *     proto |                      *
@@ -203,9 +205,22 @@ public class VRMLParser extends Parser {
      ************************************/
     private boolean parseProtoStatement() {
         
-        return (lookahead("PROTO") && match("PROTO") /* && ...Later...*/) ||
+        return (lookahead("PROTO") && parseProto()) ||
         
-               (lookahead("EXTERNPROTO") && match("EXTERNPROTO") /* && ...Later...*/);
+               (lookahead("EXTERNPROTO") /* && ...Later...*/);
+    }
+    
+    /************************************
+     * proto ::=                        *
+     *       PROTO nodeTypeId           *
+     *       [ interfaceDeclarations ]  *
+     *       { protoBody } ;            *
+     ************************************/
+    private boolean parseProto() {
+    	
+    	return false;//(match("PROTO") && matchTypeId() && instantiateProtoNode() &&
+    			// match("[") && parseProtoInterface() && match("]") &&
+    			// match("{") && parseProtoBody() && match("}"));
     }
     
     /************************************
@@ -240,7 +255,6 @@ public class VRMLParser extends Parser {
      *                     Token operaions.                      *
      *************************************************************/
     
-    
     /**
      * Initializes the parser by reading the first
      * token and storing it in the lookahead variable.
@@ -256,13 +270,19 @@ public class VRMLParser extends Parser {
         }
     }
     
-    
     /**
      * Determines whether the lookahead token
      * coincides with the given one.
      */
-    private boolean lookahead(String token) {
+    public boolean lookahead(String token) {
         return (lookahead != null && token != null && lookahead.equals(token));
+    }
+    
+    /**
+     * Returns the lookahead token.
+     */
+    public String lookahead() {
+    	return lookahead;
     }
     
     /**
@@ -275,7 +295,7 @@ public class VRMLParser extends Parser {
      * @throws SyntaxError if token isn't matched
      * @return true if token is matched and the next token is read,
      */
-    private boolean match(String token) throws SyntaxError {
+    public boolean match(String token) throws SyntaxError {
         
         if(token.equals(lookahead)) {
 
@@ -381,7 +401,7 @@ public class VRMLParser extends Parser {
     /**
      * Reads the next token from the input.
      */
-    private void nextToken() {
+    public void nextToken() {
     	
         try {
             int ttype = tokenizer.nextToken();
@@ -397,6 +417,12 @@ public class VRMLParser extends Parser {
         } catch (IOException e) {}
     }
     
+    /**
+     * Returns the tokenizer.
+     */
+    public StreamTokenizer tokenizer() {
+    	return tokenizer;
+    }
     
     
 
@@ -474,7 +500,7 @@ System.out.println();
 
     /**
      * Gets the value of the next field and stores it
-     * in the appropriate Bean. Works both for primitive types
+     * in the appropriate Bean. Works both for value types
      * and for Node types (recursively).
      */
     private boolean matchFieldValueAndSetField() {
@@ -482,7 +508,7 @@ System.out.println();
         // ! NB: Here, it was NOT the grammar which gave the information
         //       on the type of the field. To retrieve it, reflection was used.
         
-        VRMLType value = null;
+        Object value = null;
         Class<?> currentFieldType;
         
         try {
@@ -493,6 +519,7 @@ System.out.println();
             return false;
         }
         
+        /****** a) Node type => recursive call of the appropriate parser Methods ******/
         if (Node.class.isAssignableFrom(currentFieldType)) {
             
             /************************
@@ -508,20 +535,40 @@ System.out.println();
             } else {
                 
                 parseNodeStatement(); // involves currentNodes.push(...)
-                value = currentNodes.pop();
+                value = currentNodes.pop(); // after parseNodeStatement the node is on the top
             }
+        }
+        /****** b) Value type => reflection call of the "parse" method in the type class ******/
+        else if (ValueType.class.isAssignableFrom(currentFieldType)) {
+        	try {
+        		value = currentFieldType.getDeclaredMethod
+        			("parse", VRMLParser.class).invoke(null, this);
+        	} catch (Exception e) {}
+        	
+        	if (value == null) {
+        		throw new Error("Parse rules for type " + currentFieldType.getName() + " not defined.");
+        	}
+        }
+        /****** c) Java primitive types => use VRML wrappers (SFBool, SFFloat, ...) ******/
+        else if (currentFieldType == int.class) { 
+            value = SFInt32.parse(this).getValue();
             
-        } else if (currentFieldType == SFBool.class) { 
+        } else if (currentFieldType == boolean.class) { 
+            value = SFBool.parse(this).getValue();
             
-            value = parseSFBool();            
+        } else if (currentFieldType == double.class) { 
+            value = SFFloat.parse(this).getValue();
             
-        } else if (currentFieldType == SFColor.class) {  
-            
-            value = parseSFColor();
+        } else if (currentFieldType == float.class) { 
+            value = (float)(SFFloat.parse(this).getValue());
+        }
+        /****** d) Error otherwise ******/
+        else {
+        	throw new Error("Value of unknown type");
         }
 
+        /****** Invoking setXxx(value) ******/
         try {
-            // Invoking setXxx(value)
             currentNodes.peek().getClass().getDeclaredMethod("set" +
                 Character.toUpperCase(currentField.peek().charAt(0)) +
                 currentField.peek().substring(1), new Class[] {currentFieldType}).
@@ -536,149 +583,20 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
             return false;
         }
     }
-    
-    
-    
 
-    /*************************************************************
-     *                   Primitive VRML types.                   *
-     *************************************************************/
-    
-    
-    /**
-     * Parses a SFBool value from the stream.
-     * 
-     ***************************************
-     * sfboolValue ::=                     *
-     *         TRUE |                      *
-     *         FALSE                       *
-     ***************************************
-     */
-    private SFBool parseSFBool() {
-        
-        SFBool res = new SFBool();
-        
-        if (lookahead("TRUE")) {
-            match("TRUE");
-            res.value = true;
-        } else if (lookahead("FALSE")) {
-            match("FALSE");
-            res.value = false;
-        } else {
-            throw new SyntaxError("Expected 'TRUE' or 'FALSE'", tokenizer.lineno());
-        }
-        
-        return res;
-    }
-    
-    /**
-     * Reads a SFColor value from the stream.
-     * 
-     ***************************************
-     * sfcolorValue ::=                    *
-     *          float float float          *
-     ***************************************
-     */
-    private SFColor parseSFColor() {
-        
-        SFColor res = new SFColor();
-        
-        res.r = parseSFFloat();
-        res.g = parseSFFloat();
-        res.b = parseSFFloat();
-        
-        return res;
-    }
-    
-    /**
-     * Reads a SFFloat value from the stream.
-     * Stores the value as a value of type double.
-     * 
-     ***************************************
-     * sffloatValue ::=                    *
-     *    floating point number in         *
-     *    ANSI C floating point format     *
-     ***************************************
-     */
-    private double parseSFFloat() {
-            	
-        try {
-        	
-        	double res = Double.parseDouble(lookahead);
-        	
-        	nextToken();
-        	
-        	return res;
-        	
-        } catch (Exception e) {
-            throw new SyntaxError("Expected a double-precision float number" +
-                                    " in ANSI C format, but got '" +
-                                    lookahead + "'", tokenizer.lineno());
-        }
-    }
-    /**
-     * Reads an SFInt32 value from the stream.
-     * 
-     ***************************************
-     * sfint32Value ::=                    *
-     *    [[+]|-]{[0-9]+|0x[0-9a-fA-F]+}   *
-     ***************************************
-     */
-    private int parseSFInt32() {
-    	
-    	int sign = 1;
-    	if (lookahead.charAt(0) == '+') {
-    		lookahead = lookahead.substring(1);
-    	} else if (lookahead.charAt(0) == '-') {
-    		sign = -1;
-    		lookahead = lookahead.substring(1);
-    	}
-    	
-    	int res = 0;
-    	
-    	if(lookahead.startsWith("0x")) { // hex format
-    		
-    		char temp;
-    		for (int i = 2; i < lookahead.length(); i++) {
-    			temp = Character.toLowerCase(lookahead.charAt(i));
-    			if (temp >= '0' && temp <= '9') {
-    				res = 16*res + (temp-'0');
-    			} else if (temp >= 'a' && temp <= 'f') {
-    				res = 16*res + (10+temp-'a');
-    			} else {
-    				throw new SyntaxError("Expected a hexadecimal integer, " +
-							"but got '" + lookahead +"'", tokenizer.lineno());
-    			}
-    		}
-    		
-    	} else { // decimal format
-    		
-    		try {
-    			res = Integer.parseInt(lookahead);
-    		} catch (Exception e) {
-                throw new SyntaxError("Expected an integer number, " +
-                        "but got '" + lookahead + "'", tokenizer.lineno());
-    		}
-    		
-    	}
-    	
-    	nextToken();
-    	
-    	return (res*sign);
-    }
     
     
     /*************************************************************
      *                   (Private fields).                       *
      *************************************************************/
     
-    
     /**
      * Initializes the private fields before the parser starts.
      */
     private void initFields() {
-        resultingNodes = new ArrayList<Node>();  
+        resultingNodes = new ArrayList<Node>();
         defNodesTable = new HashMap<String, Node>();
+        protoNodesTable = new HashMap<String, Node>();
         currentNodes = new Stack<Node>();
         currentField = new Stack<String>();
         currentId = null;
@@ -692,6 +610,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
      * for their further use in USE statements.
      */
     private HashMap<String, Node> defNodesTable;
+    private HashMap<String, Node> protoNodesTable;
     
     /* current Token */
     private String lookahead;
