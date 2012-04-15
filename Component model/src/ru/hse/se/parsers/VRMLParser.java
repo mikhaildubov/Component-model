@@ -19,9 +19,9 @@ public class VRMLParser extends Parser {
 
     @Override
     protected void setUpTokenizer() {
-    	
-    	tokenizer.resetSyntax();
-    	
+        
+        tokenizer.resetSyntax();
+        
         tokenizer.wordChars('a', 'z'); // Id's
         tokenizer.wordChars('A', 'Z'); // Id's
         tokenizer.wordChars('0', '9'); // Id's
@@ -32,7 +32,8 @@ public class VRMLParser extends Parser {
         
         tokenizer.commentChar('#');
         tokenizer.quoteChar('"');
-        
+
+        // Terminals
         tokenizer.ordinaryChar('{');
         tokenizer.ordinaryChar('}');
         tokenizer.ordinaryChar('[');
@@ -40,12 +41,15 @@ public class VRMLParser extends Parser {
         
         tokenizer.whitespaceChars(' ', ' ');
         tokenizer.whitespaceChars('\n', '\n');
+        tokenizer.whitespaceChars('\t', '\t');
+        tokenizer.whitespaceChars('\r', '\r');
         tokenizer.whitespaceChars(',', ','); // => for [ children ]
 
         //tokenizer.parseNumbers(); // => No! Bad for advanced float/int32 parsing
         tokenizer.lowerCaseMode(false); // VRML is not case-sensitive
         tokenizer.eolIsSignificant(false); // We can count lines with tokenizer.lineno()
     }
+    
 
     /*************************************************************
      *    Recursive-descent predictive top-down VRML parser.     *
@@ -217,10 +221,10 @@ public class VRMLParser extends Parser {
      *       { protoBody } ;            *
      ************************************/
     private boolean parseProto() {
-    	
-    	return false;//(match("PROTO") && matchTypeId() && instantiateProtoNode() &&
-    			// match("[") && parseProtoInterface() && match("]") &&
-    			// match("{") && parseProtoBody() && match("}"));
+        
+        return false;//(match("PROTO") && matchTypeId() && instantiateProtoNode() &&
+                // match("[") && parseProtoInterface() && match("]") &&
+                // match("{") && parseProtoBody() && match("}"));
     }
     
     /************************************
@@ -282,7 +286,7 @@ public class VRMLParser extends Parser {
      * Returns the lookahead token.
      */
     public String lookahead() {
-    	return lookahead;
+        return lookahead;
     }
     
     /**
@@ -402,14 +406,19 @@ public class VRMLParser extends Parser {
      * Reads the next token from the input.
      */
     public void nextToken() {
-    	
+        
         try {
             int ttype = tokenizer.nextToken();
             
             if (ttype == '{' || ttype == '}' ||
                 ttype == '[' || ttype == ']') {
+                // Terminals
                 lookahead = String.valueOf(((char)tokenizer.ttype));
             } else if (ttype == StreamTokenizer.TT_WORD) {
+                // Non-terminals
+                lookahead = tokenizer.sval;
+            }  else if (ttype == '"') {
+                // Quoted Strings
                 lookahead = tokenizer.sval;
             } else if (ttype == StreamTokenizer.TT_EOF) {
                 // End of file
@@ -421,7 +430,7 @@ public class VRMLParser extends Parser {
      * Returns the tokenizer.
      */
     public StreamTokenizer tokenizer() {
-    	return tokenizer;
+        return tokenizer;
     }
     
     
@@ -538,33 +547,70 @@ System.out.println();
                 value = currentNodes.pop(); // after parseNodeStatement the node is on the top
             }
         }
-        /****** b) Value type => reflection call of the "parse" method in the type class ******/
+        
+        /****** b) Value type => call of the "parse" method in the type class via reflection ******/
         else if (ValueType.class.isAssignableFrom(currentFieldType)) {
-        	try {
-        		value = currentFieldType.getDeclaredMethod
-        			("parse", VRMLParser.class).invoke(null, this);
-        	} catch (Exception e) {}
-        	
-        	if (value == null) {
-        		throw new Error("Parse rules for type " + currentFieldType.getName() + " not defined.");
-        	}
+            try {
+                value = currentFieldType.getDeclaredMethod
+                    ("parse", VRMLParser.class).invoke(null, this);
+            } catch (Exception e) {}
+            
+            if (value == null) {
+                throw new Error("Parse rules for type " + currentFieldType.getName() + " not defined.");
+            }
         }
+        
         /****** c) Java primitive types => use VRML wrappers (SFBool, SFFloat, ...) ******/
+        // TODO: TEST!
         else if (currentFieldType == int.class) { 
             value = SFInt32.parse(this).getValue();
+              
+        } else if (currentFieldType == int[].class) { 
+            ArrayList<SFInt32> val = MFInt32.parse(this).getValue();
+            value = new int[val.size()];
+            for (int i = 0; i < val.size(); i++) {
+                ((int[])value)[i] = val.get(i).getValue();
+            }
             
         } else if (currentFieldType == boolean.class) { 
             value = SFBool.parse(this).getValue();
             
+        } else if (currentFieldType == boolean[].class) { 
+            ArrayList<SFBool> val = MFBool.parse(this).getValue();
+            value = new boolean[val.size()];
+            for (int i = 0; i < val.size(); i++) {
+                ((boolean[])value)[i] = val.get(i).getValue();
+            }
+            
         } else if (currentFieldType == double.class) { 
             value = SFFloat.parse(this).getValue();
             
+        } else if (currentFieldType == double[].class) {
+            ArrayList<SFFloat> val = MFFloat.parse(this).getValue();
+            value = new double[val.size()];
+            for (int i = 0; i < val.size(); i++) {
+                ((double[])value)[i] = val.get(i).getValue();
+            }
+            
         } else if (currentFieldType == float.class) { 
             value = (float)(SFFloat.parse(this).getValue());
+            
+        } else if (currentFieldType == float[].class) {
+            ArrayList<SFFloat> val = MFFloat.parse(this).getValue();
+            value = new double[val.size()];
+            for (int i = 0; i < val.size(); i++) {
+                ((float[])value)[i] = (float)(val.get(i).getValue());
+            }
+            
         }
+        
+        //else if (currentFieldType == ArrayList.class) {
+        // TODO: Process ArrayLists?    
+        //}
+        
         /****** d) Error otherwise ******/
         else {
-        	throw new Error("Value of unknown type");
+            throw new Error("Value of unknown type");
         }
 
         /****** Invoking setXxx(value) ******/
@@ -596,7 +642,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
     private void initFields() {
         resultingNodes = new ArrayList<Node>();
         defNodesTable = new HashMap<String, Node>();
-        protoNodesTable = new HashMap<String, Node>();
+        //protoNodesTable = new HashMap<String, Node>();
         currentNodes = new Stack<Node>();
         currentField = new Stack<String>();
         currentId = null;
@@ -610,7 +656,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
      * for their further use in USE statements.
      */
     private HashMap<String, Node> defNodesTable;
-    private HashMap<String, Node> protoNodesTable;
+    //private HashMap<String, Node> protoNodesTable;
     
     /* current Token */
     private String lookahead;

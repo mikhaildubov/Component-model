@@ -1,6 +1,6 @@
 package ru.hse.se.nodes;
 
-import java.util.HashMap;
+//import java.util.HashMap;
 
 /**
  * Provides a naive implementation of the VRML "PROTO" objects.
@@ -9,27 +9,27 @@ import java.util.HashMap;
  * @author MSDubov
  */
 public class PrototypedNode implements Cloneable {
-	
-	public PrototypedNode()
-	{
-		
-	}
-	
-	/*public PrototypedNode instantiate()
-	{
-		
-	}*/
-	
-	public void setRootNode(Node node)
-	{
-		rootNode = node;
-	}
-	
-	public Node getRootNode()
-	{
-		return rootNode;
-	}
+    
+    public PrototypedNode()
+    {
+        
+    }
+    
+    /*public PrototypedNode instantiate()
+    {
+        
+    }*/
+    
+    public void setRootNode(Node node)
+    {
+        rootNode = node;
+    }
+    
+    public Node getRootNode()
+    {
+        return rootNode;
+    }
 
-	private Node rootNode;
-	private HashMap<String, Node> fields;
+    private Node rootNode;
+    //private HashMap<String, Node> fields;
 }

@@ -4,16 +4,16 @@ import ru.hse.se.parsers.SyntaxError;
 import ru.hse.se.parsers.VRMLParser;
 
 public class SFFloat extends ValueType {
-	
-	public SFFloat(double value) {
-		this.value = value;
-	}
-	
-	public double getValue() {
-		return value;
-	}
-	
-	/**
+    
+    public SFFloat(double value) {
+        this.value = value;
+    }
+    
+    public double getValue() {
+        return value;
+    }
+    
+    /**
      * Reads a double / SFFloat value from the stream.
      * 
      ***************************************
@@ -22,15 +22,15 @@ public class SFFloat extends ValueType {
      *    ANSI C floating point format     *
      ***************************************
      */
-	public static SFFloat parse(VRMLParser parser) throws SyntaxError {
+    public static SFFloat parse(VRMLParser parser) throws SyntaxError {
 
-		double res;
-		
-		try {
-        	
-        	res = Double.parseDouble(parser.lookahead());
-        	parser.nextToken();
-        	
+        double res;
+        
+        try {
+            
+            res = Double.parseDouble(parser.lookahead());
+            parser.nextToken();
+            
         } catch (Exception e) {
             throw new SyntaxError("Expected a double-precision float number" +
                                     " in ANSI C format, but got '" +
@@ -38,8 +38,14 @@ public class SFFloat extends ValueType {
         }
         
         return new SFFloat(res);
-	}
-	
-	
-	private double value;
+    }
+    
+    
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+    
+    
+    private double value;
 }

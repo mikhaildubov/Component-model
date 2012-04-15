@@ -1,0 +1,26 @@
+DEF shape1 Shape
+{
+  appearance Appearance
+  {
+    material DEF mat Material
+    {
+      diffuseColor -2e-1 -0.2 +0.01
+    } # Material
+  } # Appearance
+  geometry Sphere
+  {
+  } # Sphere
+} # Shape
+
+Shape {
+   appearance    DEF app_1 Appearance {
+      material Material {
+      }
+   }
+   geometry Text {
+        string [ "Qwerty" "Azerty" ]
+        length  [ 3.0, 4.0 ]
+    }
+}
+
+USE shape1
