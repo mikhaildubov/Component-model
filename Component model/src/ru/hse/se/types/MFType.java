@@ -54,7 +54,7 @@ public abstract class MFType<T extends ValueType> extends ValueType {
      *      sfXxxValue sfXxxValues ;       *
      ***************************************
      *
-     * TODO: Any improvements?
+     * TODO: This method is definitely a "crutch". Any improvements?
      */
     protected static <S extends ValueType, M extends MFType<S>> M
            parseGeneric(VRMLParser parser, Class<M> clM, Class<S> clS) throws SyntaxError {

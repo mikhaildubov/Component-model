@@ -19,22 +19,8 @@ public class VRMLParserTest extends TestCase {
     }
     
     public void testParse() throws FileNotFoundException {
+        
         VRMLParser parser = new VRMLParser();
-
-        // SFFloat, SFInt32 <-> parse methods in Java
-        String test;
-        
-        test = "-0.24";
-        assertEquals(Double.parseDouble(test), -0.24, 0.0000001);
-        
-        test = "-2.4e-1";
-        assertEquals(Double.parseDouble(test), -0.24, 0.0000001);
-        
-        // test = "0x1A";
-        // assertEquals(Integer.parseInt(test), 26);
-        
-        // test = "-0x1A";
-        // assertEquals(Integer.parseInt(test), -26);
 
         try {
             ArrayList<Node> result = parser.parse(new FileReader("test\\Example.wrl"));
