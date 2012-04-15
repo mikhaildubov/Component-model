@@ -25,7 +25,11 @@ USE shape1
 <br/>
 
 Using the knowledge about the VRML <em>Node types</em> and <em>data types</em>, it immediately builds a bunch of JavaBeans components, which make up the scene graph:</p>
+<table border = "0">
+<td>
 <img src = "http://s019.radikal.ru/i616/1204/d9/5529bb600875.jpg"/>
+</td>
+</table>
 <br/><br/>
 
 <h2>The front-end</h2>
@@ -35,10 +39,10 @@ Using the knowledge about the VRML <em>Node types</em> and <em>data types</em>, 
 
 ## Reference books:
 <table border = "0" width = "60%">
-<td valign = "bottom" width = "33%"><img src = "http://dragonbook.stanford.edu/cover.jpg" hspace = "5"/></td>
+<td valign = "bottom" width = "33%"><img src = "http://s019.radikal.ru/i638/1204/e7/29b589960569.jpg" hspace = "5"/></td>
 <td valign = "bottom" width = "33%"><img src = "http://www.horstmann.com/corejava/cj8v1.png" hspace = "5"/></td>
 <td valign = "bottom" width = "33%"><img src = "http://www.horstmann.com/corejava/cj8v2.png" hspace = "5"/></td>
-</table><br/><br/>
+</table><br/>
 
 * __"Compilers: Principles, Techniques, and Tools"__ by Alfred V. Aho, Monica S. Lam, Ravi Sethi, and Jeffrey D. Ullman
 * __"Core Java, Volume I: Fundamentals"__ by Cay S. Horstmann and Gary Cornell
