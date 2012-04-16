@@ -22,7 +22,7 @@
 
 USE shape1</code></pre>
 
-- and, using its knowledge about the VRML <em>node types</em> and <em>data types</em>, immediately builds a bunch of <em>JavaBeans</em> components, which make up the scene graph:</p>
+&ndash; and, using its knowledge about the VRML <em>node types</em> and <em>data types</em>, immediately builds a bunch of <em>JavaBeans</em> components, which make up the scene graph:</p>
 <table border = "0">
 <td>
 <img src = "http://s019.radikal.ru/i616/1204/d9/5529bb600875.jpg"/>
