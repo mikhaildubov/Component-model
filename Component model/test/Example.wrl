@@ -24,3 +24,10 @@ Shape {
 }
 
 USE shape1
+
+Group {
+    children [
+		Box {}
+		Sphere {}
+	]
+}

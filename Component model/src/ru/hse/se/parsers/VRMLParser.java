@@ -136,6 +136,14 @@ public class VRMLParser extends Parser {
                (parseNode());
     }
     
+    public Node parseChildNode() {
+        if (parseNodeStatement()) {
+            return currentNodes.pop();
+        } else {
+            return null;
+        }
+    }
+    
     /************************************
      * node ::=                         *
      *     nodeTypeId { nodeBody } |    *
