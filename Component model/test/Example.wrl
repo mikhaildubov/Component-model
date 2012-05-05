@@ -1,3 +1,5 @@
+#VRML 97
+
 DEF shape1 Shape
 {
   appearance Appearance

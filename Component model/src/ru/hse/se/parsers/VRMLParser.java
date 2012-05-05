@@ -11,12 +11,17 @@ import java.util.Stack;
 
 /**
  * VRML parser. Builds up a bunch of beans
- * on the basis of the source code.
+ * on the basis of its declarative description.
  * 
  * @author Mikhail Dubov
  */
 public class VRMLParser extends Parser {
 
+    /**
+     * Sets up the tokenizer object
+     * according to the VRML grammar.
+     * (defines terminals etc.)
+     */
     @Override
     protected void setUpTokenizer() {
         
@@ -38,6 +43,7 @@ public class VRMLParser extends Parser {
         tokenizer.ordinaryChar('}');
         tokenizer.ordinaryChar('[');
         tokenizer.ordinaryChar(']');
+        tokenizer.ordinaryChar('.');
         
         tokenizer.whitespaceChars(' ', ' ');
         tokenizer.whitespaceChars('\n', '\n');
@@ -342,7 +348,7 @@ public class VRMLParser extends Parser {
      *     0x5c, 0x5d, 0x7b, 0x7d, 0x7f                              *
      *****************************************************************
      * @param id
-     * @return
+     * @return true if the token is a correct id, false otherwise
      */
     private boolean lookaheadIsId() {
         
@@ -355,7 +361,7 @@ public class VRMLParser extends Parser {
     /**
      * Reads the next token that represents an Id.
      *
-     * @return the Id symbol
+     * @return true, if matching is successful
      */
     private boolean matchId() {
         
@@ -433,14 +439,7 @@ public class VRMLParser extends Parser {
             } // No TT_NUMBER or TT_EOL can arise
         } catch (IOException e) {}
     }
-    
-    /**
-     * Returns the tokenizer.
-     */
-    public StreamTokenizer tokenizer() {
-        return tokenizer;
-    }
-    
+        
     
 
     /*************************************************************

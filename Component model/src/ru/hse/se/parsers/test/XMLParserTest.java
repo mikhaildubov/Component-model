@@ -5,21 +5,21 @@ import java.io.IOException;
 
 import ru.hse.se.nodes.Node;
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.XMLParser;
 
 import java.util.ArrayList;
 import java.io.FileReader;
 
 import junit.framework.TestCase;
 
-public class VRMLParserTest extends TestCase {
+public class XMLParserTest extends TestCase {
     
     public void testParse() throws FileNotFoundException {
         
-        VRMLParser parser = new VRMLParser();
+        XMLParser parser = new XMLParser();
 
         try {
-            ArrayList<Node> result = parser.parse(new FileReader("test\\Example.wrl"));
+            ArrayList<Node> result = parser.parse(new FileReader("test\\Example.x3d"));
 
             System.out.println("result.size = " + result.size());
             for (Node n : result) {

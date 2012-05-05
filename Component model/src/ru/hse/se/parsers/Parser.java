@@ -31,5 +31,12 @@ public abstract class Parser {
     protected abstract void setUpTokenizer();
     protected abstract ArrayList<Node> parseScene() throws SyntaxError, IOException;
 
+    /**
+     * Returns the tokenizer.
+     */
+    public StreamTokenizer tokenizer() {
+        return tokenizer;
+    }
+
     protected StreamTokenizer tokenizer;
 }
