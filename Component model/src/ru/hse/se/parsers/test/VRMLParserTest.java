@@ -10,8 +10,6 @@ import ru.hse.se.parsers.VRMLParser;
 import java.util.ArrayList;
 import java.io.FileReader;
 
-import junit.framework.TestCase;
-
 public class VRMLParserTest extends ParserTest {
     
     public void testParse() throws FileNotFoundException {

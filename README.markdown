@@ -22,12 +22,21 @@
 
 USE shape1</code></pre>
 
-&ndash; and, using its knowledge about the VRML <em>node types</em> and <em>data types</em>, immediately builds a bunch of <em>JavaBeans</em> components, which make up the scene graph:</p>
+<p>&ndash; and, using its knowledge about the VRML <em>node types</em> and <em>data types</em>, immediately builds a bunch of <em>JavaBeans</em> components, which make up the scene graph:</p>
 <table border = "0">
 <td>
 <img src = "http://s019.radikal.ru/i616/1204/d9/5529bb600875.jpg"/>
 </td>
 </table>
+<br/><br/>
+
+<h2>XML Parser</h2>
+<p>The XML parser is built according to <a href="http://en.wikipedia.org/wiki/Simple_API_for_XML">SAX</a>, "Simple API for XML", which is an event-based model of parser construction. Here, the parser operates on each piece of the XML document sequentially, reporting special events as soon as he meets an opening tag, an attribute etc.:</p>
+<pre><code>openingTag(name)
+closingTag(name)
+attribute(name, value)
+textNode(text)</code></pre>
+<p>One of the benefits of this approach is an effective use of memory, as there is no need of tree representation of the entire document. </p>
 <br/><br/>
 
 <h2>Front-end</h2>

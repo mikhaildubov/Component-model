@@ -10,8 +10,6 @@ import ru.hse.se.parsers.XMLParser;
 import java.util.ArrayList;
 import java.io.FileReader;
 
-import junit.framework.TestCase;
-
 public class XMLParserTest extends ParserTest {
     
     public void testParse() throws FileNotFoundException {

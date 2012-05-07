@@ -1,13 +1,6 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
-import ru.hse.se.types.MFBool;
-import ru.hse.se.types.MFFloat;
-import ru.hse.se.types.MFInt32;
-import ru.hse.se.types.SFBool;
-import ru.hse.se.types.SFFloat;
-import ru.hse.se.types.SFInt32;
-import ru.hse.se.types.ValueType;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;

@@ -1,7 +1,6 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.*;
-import ru.hse.se.types.*;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
