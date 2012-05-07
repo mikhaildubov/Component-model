@@ -36,7 +36,7 @@ USE shape1</code></pre>
 closingTag(name)
 attribute(name, value)
 textNode(text)</code></pre>
-<p>One of the benefits of this approach is an effective use of memory, as there is no need of tree representation of the entire document. </p>
+<p>One of the benefits of this approach is a relatively effective use of memory, as there is no need of tree representation of the entire document. </p>
 <br/><br/>
 
 <h2>Front-end</h2>
