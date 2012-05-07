@@ -60,4 +60,3 @@ textNode(text)</code></pre>
 <b><a href="http://github.com/msdubov">Mikhail Dubov</a></b> <em>(parsers)</em><br/>
 <b><a href="http://github.com/istima">Timur Akhmetgareev</a></b> <em>(front-end)</em><br/>
 <br/>
-<b>Efim Grinkrug</b> <em>(supervisor)</em>

@@ -9,7 +9,9 @@ import ru.hse.se.types.SFFloat;
 public class Text extends Geometry implements Serializable {
     
     public Text() {
-        
+        string = new MFString();
+        length = new MFFloat();
+        maxExtent = new SFFloat(0);
     }
     
     // public void setFontStyle(FontStyle fst) {

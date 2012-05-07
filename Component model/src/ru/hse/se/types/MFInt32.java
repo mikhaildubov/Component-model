@@ -11,6 +11,10 @@ public class MFInt32 extends MFValueType<SFInt32> {
         super(value);
     }
     
+    public MFInt32() {
+        super();
+    }
+    
     public static MFInt32 parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFInt32, MFInt32>parseGeneric
                                     (parser, MFInt32.class, SFInt32.class);

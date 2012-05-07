@@ -11,6 +11,10 @@ public class MFFloat extends MFValueType<SFFloat> {
         super(value);
     }
     
+    public MFFloat() {
+        super();
+    }
+    
     public static MFFloat parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFFloat, MFFloat>parseGeneric
                                     (parser, MFFloat.class, SFFloat.class);

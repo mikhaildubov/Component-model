@@ -16,8 +16,10 @@ public class ParserTest extends TestCase {
         
         nodes = new Stack<Node>();
         
-        for (Node node : result) {
-            introspect(node);
+        for (int i = 0; i < result.size(); i++) {
+            System.out.print((i+1) + ". ");
+            introspect(result.get(i));
+            System.out.println();
         }
     }
     

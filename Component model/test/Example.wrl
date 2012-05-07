@@ -16,6 +16,10 @@ DEF shape1 Shape
 } # Shape
 
 Shape {
+   geometry Box {}
+}
+
+Shape {
    appearance    DEF app_1 Appearance {
       material USE mat
    }
@@ -26,10 +30,3 @@ Shape {
 }
 
 USE shape1
-
-Group {
-    children [
-		Box {}
-		Sphere {}
-	]
-}

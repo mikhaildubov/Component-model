@@ -6,7 +6,7 @@ import ru.hse.se.types.SFFloat;
 public class Sphere extends Geometry implements Serializable {
 
     public Sphere() {
-        
+        radius = new SFFloat(0);
     }
     
     public void setRadius(SFFloat r) {

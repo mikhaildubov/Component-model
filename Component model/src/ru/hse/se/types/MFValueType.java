@@ -16,7 +16,7 @@ public abstract class MFValueType<T extends ValueType> extends MFType<T> {
     
     public MFValueType() {
         this.value = new ArrayList<T>();
-    }    
+    }
     
     /* 
      !! NOT ALLOWED !!

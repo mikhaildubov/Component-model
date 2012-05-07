@@ -11,6 +11,10 @@ public class MFString extends MFValueType<SFString> {
         super(value);
     }
     
+    public MFString() {
+        super();
+    }
+    
     public static MFString parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFString, MFString>parseGeneric
                             (parser, MFString.class, SFString.class);

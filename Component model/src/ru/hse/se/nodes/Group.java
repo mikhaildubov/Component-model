@@ -1,12 +1,13 @@
 package ru.hse.se.nodes;
 
 import java.io.Serializable;
+
 import ru.hse.se.types.MFNode;
 
 public class Group extends Node implements Serializable {
     
     public Group() {
-        
+        children = new MFNode();
     }
     
     public void setChildren(MFNode ch) {

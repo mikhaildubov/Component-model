@@ -11,6 +11,10 @@ public class MFBool extends MFValueType<SFBool> {
         super(value);
     }
     
+    public MFBool() {
+        super();
+    }
+    
     public static MFBool parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFBool, MFBool>parseGeneric
                                     (parser, MFBool.class, SFBool.class);

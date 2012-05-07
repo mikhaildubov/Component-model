@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Appearance extends Node implements Serializable {
     
     public Appearance() {
-        
+        material = new Material();
     }
     
     public void setMaterial(Material m) {

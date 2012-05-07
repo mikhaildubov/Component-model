@@ -7,6 +7,10 @@
 	</Shape>
 	
 	<Shape>
+		<Box />
+	</Shape>
+	
+	<Shape>
 		<Appearance DEF='app_1'>
 			<Material USE='mat' />
 		</Appearance>

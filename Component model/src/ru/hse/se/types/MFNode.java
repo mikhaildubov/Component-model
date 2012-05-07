@@ -11,6 +11,10 @@ public class MFNode extends MFType<Node> {
     public MFNode(ArrayList<Node> value) {
         super(value);
     }
+    
+    public MFNode() {
+        super();
+    }
 
     /**
      * Reads a MFNode value from the stream.
