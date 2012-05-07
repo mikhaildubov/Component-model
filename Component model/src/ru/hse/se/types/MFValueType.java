@@ -3,7 +3,9 @@ package ru.hse.se.types;
 import java.util.ArrayList;
 
 import ru.hse.se.parsers.SyntaxError;
+import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.XMLParser;
 
 @SuppressWarnings("unchecked")
 public abstract class MFValueType<T extends ValueType> extends MFType<T> {
@@ -37,22 +39,32 @@ public abstract class MFValueType<T extends ValueType> extends MFType<T> {
      * TODO: This method is definitely a "crutch". Any improvements?
      */
     protected static <S extends ValueType, M extends MFType<S>> M
-           parseGeneric(VRMLParser parser, Class<M> clM, Class<S> clS) throws SyntaxError {
+           parseGeneric(Parser parser, Class<M> clM, Class<S> clS) throws SyntaxError {
         
         M res = null;
         
         try {
             res = clM.getConstructor(ArrayList.class).newInstance(new ArrayList<S>());
 
-            if (parser.lookahead("[")) {
-                parser.match("[");
-                while(! parser.lookahead("]")) {
-                    res.add((S)clS.getDeclaredMethod("parse", VRMLParser.class).
-                                                                invoke(null, parser));
+            // VRML
+            if (parser instanceof VRMLParser) {
+                if (parser.lookahead("[")) {
+                    parser.match("[");
+                    while(! parser.lookahead("]")) {
+                        res.add((S)clS.getDeclaredMethod("parse",
+                                  Parser.class).invoke(null, parser));
+                    }
+                    parser.match("]");
+                } else {
+                    res.add((S)S.parse(parser));
                 }
-                parser.match("]");
-            } else {
-                res.add((S)S.parse(parser));
+            }
+            // XML
+            else if (parser instanceof XMLParser) {
+                while(! parser.lookahead("'")) {
+                    res.add((S)clS.getDeclaredMethod("parse",
+                              Parser.class).invoke(null, parser));
+                }
             }
             
         } catch (Exception e) {}

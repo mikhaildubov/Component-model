@@ -1,7 +1,7 @@
 package ru.hse.se.types;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class SFColor extends ValueType {
     
@@ -31,7 +31,7 @@ public class SFColor extends ValueType {
      *          float float float          *
      ***************************************
      */
-    public static SFColor parse(VRMLParser parser) throws SyntaxError {
+    public static SFColor parse(Parser parser) throws SyntaxError {
 
         SFFloat r = SFFloat.parse(parser);
         SFFloat g = SFFloat.parse(parser);

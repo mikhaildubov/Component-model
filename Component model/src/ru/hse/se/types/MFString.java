@@ -3,7 +3,7 @@ package ru.hse.se.types;
 import java.util.ArrayList;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class MFString extends MFValueType<SFString> {
 
@@ -11,7 +11,7 @@ public class MFString extends MFValueType<SFString> {
         super(value);
     }
     
-    public static MFString parse(VRMLParser parser) throws SyntaxError {
+    public static MFString parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFString, MFString>parseGeneric
                             (parser, MFString.class, SFString.class);
     }

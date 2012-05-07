@@ -14,4 +14,11 @@
 	</Shape>
 	
 	<Shape USE='shape1' />
+	
+	<Group>
+		<fieldValue name='children'>
+			<Box />
+			<Sphere />
+		</fieldValue>
+	</Group>
 </Scene>

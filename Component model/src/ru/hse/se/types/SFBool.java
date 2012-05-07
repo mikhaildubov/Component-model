@@ -1,7 +1,7 @@
 package ru.hse.se.types;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class SFBool extends ValueType {
     
@@ -22,7 +22,7 @@ public class SFBool extends ValueType {
      *         FALSE                       *
      ***************************************
      */
-    public static SFBool parse(VRMLParser parser) throws SyntaxError {
+    public static SFBool parse(Parser parser) throws SyntaxError {
 
         boolean res;
         

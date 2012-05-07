@@ -16,6 +16,10 @@ public class Appearance extends Node implements Serializable {
         return material;
     }
     
+    public String containerField() {
+        return "appearance";
+    }
+    
     private Material material;
     
     private static final long serialVersionUID = 1L;

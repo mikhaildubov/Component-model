@@ -1,7 +1,7 @@
 package ru.hse.se.types;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class SFFloat extends ValueType {
     
@@ -22,12 +22,11 @@ public class SFFloat extends ValueType {
      *    ANSI C floating point format     *
      ***************************************
      */
-    public static SFFloat parse(VRMLParser parser) throws SyntaxError {
+    public static SFFloat parse(Parser parser) throws SyntaxError {
 
         double res;
         
         try {
-            
             res = Double.parseDouble(parser.lookahead());
             parser.nextToken();
             

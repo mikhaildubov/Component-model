@@ -12,22 +12,22 @@ import java.io.FileReader;
 
 import junit.framework.TestCase;
 
-public class XMLParserTest extends TestCase {
+public class XMLParserTest extends ParserTest {
     
     public void testParse() throws FileNotFoundException {
         
         XMLParser parser = new XMLParser();
 
         try {
+            
             ArrayList<Node> result = parser.parse(new FileReader("test\\Example.x3d"));
-
-            System.out.println("result.size = " + result.size());
-            for (Node n : result) {
-                System.out.println(" -> " + n.getClass().getName());
-            }
+            
+            introspectNodes(result);
             
         } catch (SyntaxError e) {
             System.out.println("\n** SYNTAX ERROR **\t" + e.getMessage());
+        } catch (Error e) {
+            System.out.println("\n** ERROR **\t" + e.getMessage());
         } catch (IOException e) {
             System.out.println("\n* Something bad with the file *");
         }

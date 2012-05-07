@@ -3,7 +3,7 @@ package ru.hse.se.types;
 import java.util.ArrayList;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class MFFloat extends MFValueType<SFFloat> {
 
@@ -11,7 +11,7 @@ public class MFFloat extends MFValueType<SFFloat> {
         super(value);
     }
     
-    public static MFFloat parse(VRMLParser parser) throws SyntaxError {
+    public static MFFloat parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFFloat, MFFloat>parseGeneric
                                     (parser, MFFloat.class, SFFloat.class);
     }

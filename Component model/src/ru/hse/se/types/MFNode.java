@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import ru.hse.se.nodes.Node;
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class MFNode extends MFType<Node> {
 
@@ -24,7 +24,7 @@ public class MFNode extends MFType<Node> {
      *
      * TODO: This method is definitely a "crutch". Any improvements?
      */
-    public static MFNode parse(VRMLParser parser) throws SyntaxError {
+    public static MFNode parse(Parser parser) throws SyntaxError {
         
         MFNode res = new MFNode(new ArrayList<Node>());
         

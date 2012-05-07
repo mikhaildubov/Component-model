@@ -1,6 +1,13 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
+import ru.hse.se.types.MFBool;
+import ru.hse.se.types.MFFloat;
+import ru.hse.se.types.MFInt32;
+import ru.hse.se.types.SFBool;
+import ru.hse.se.types.SFFloat;
+import ru.hse.se.types.SFInt32;
+import ru.hse.se.types.ValueType;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -24,30 +31,18 @@ public class XMLParser extends Parser {
     @Override
     protected void setUpTokenizer() {
         
-        tokenizer.resetSyntax();
-        
-        tokenizer.wordChars('a', 'z'); // Id's
-        tokenizer.wordChars('A', 'Z'); // Id's
-        tokenizer.wordChars('0', '9'); // Id's
-        tokenizer.wordChars('_', '_'); // Id's can contain '_'
+        super.setUpTokenizer();
         
         // TODO: comments??
-        tokenizer.commentChar('#');
-        tokenizer.quoteChar('"');
-        tokenizer.quoteChar('\'');
 
         // Terminals
         tokenizer.ordinaryChar('<');
         tokenizer.ordinaryChar('>');
         tokenizer.ordinaryChar('/');
         tokenizer.ordinaryChar('=');
-        
-        tokenizer.whitespaceChars(' ', ' ');
-        tokenizer.whitespaceChars('\n', '\n');
-        tokenizer.whitespaceChars('\t', '\t');
-        tokenizer.whitespaceChars('\r', '\r');
+        tokenizer.ordinaryChar('\''); // Reading attributes manually
 
-        tokenizer.parseNumbers(); // TODO: manual parsing required or not?
+        //tokenizer.parseNumbers(); // => No! Bad for advanced float/int32 parsing
         tokenizer.lowerCaseMode(false); // X3D is case-sensitive
         tokenizer.eolIsSignificant(false); // We can count lines with tokenizer.lineno()
     }
@@ -60,7 +55,7 @@ public class XMLParser extends Parser {
     
     /**
      * Performs the parsing of the input file
-     * and returns an ArrayList of core nodes.
+     * and returns an ArrayList of root nodes.
      */
     @Override
     protected ArrayList<Node> parseScene() throws SyntaxError, IOException {
@@ -81,7 +76,9 @@ public class XMLParser extends Parser {
      * opening tag, closing tag etc.
      */
     private void parseXML() {
-        // TODO: This is a DFA! (a picture to the coursework presentation?)
+        
+        // Works like a DFA.
+        
         while (lookahead != null) {
             
             // 1. Opening or closing tag starts
@@ -91,12 +88,12 @@ public class XMLParser extends Parser {
                 
                 if (lookahead("/")) {
                     match("/");
-                    if (currentTag.size() == 0) {
+                    if (currentTags.isEmpty()) {
                         throw new SyntaxError ("Closing tag + '" + lookahead
                                 + "' does not match any opening tag.",
                                 tokenizer.lineno());
                     }
-                    String openingTag = currentTag.pop();
+                    String openingTag = currentTags.pop();
                     if (! lookahead(openingTag)) {
                         throw new SyntaxError ("Closing tag + '" + lookahead
                                       + "' does not match the opening tag + '"
@@ -104,14 +101,18 @@ public class XMLParser extends Parser {
                     }
                     closingTag(lookahead);
                     
+                    nextToken();
+                    match(">");
+                    readingTag = false;
+                    
                 } else {
-                    currentTag.push(lookahead);
+                    currentTags.push(lookahead);
                     openingTag(lookahead);
+                    
+                    nextToken();
                 }
-                
-                nextToken();
             }
-            // 2. Some tag ends
+            // 2. Opening tag ends
             else if (lookahead(">")) {
                 
                 match(">");
@@ -123,15 +124,14 @@ public class XMLParser extends Parser {
                 match(">");
                 
                 readingTag = false;
-                closingTag(currentTag.pop());
+                closingTag(currentTags.pop());
             }
             // 4. Attribute
             else if (readingTag) {
                 matchAttributeId();
                 match("=");
                 
-                attribute(currentAttribute, lookahead);
-                nextToken();                
+                attribute(currentAttribute);
             }
             // 5. Text node
             else {
@@ -146,33 +146,207 @@ public class XMLParser extends Parser {
         }
     }
     
+    /**
+     * Parses the next Node from the input stream.
+     * Needed for MFNode parsing.
+     */
+    @Override
+    public Node parseChildNode() {
+        return null;
+    }
+    
     
     /*************************************************************
      *                           Events.                         *
      *************************************************************/
     
+    /**
+     * Called whenever the parser meets an opening tag.
+     * 
+     * @param name tag name
+     */
     private void openingTag(String name) {
         
-System.out.println("Opening: " + name);
+                            System.out.println("Opening: " + name);
+                            
+        if (name.equals("X3D") || name.equals("Scene")) {
+            
+            // X3D and Scene are simply
+            // root nodes with no functionality
+            return;
+        }
 
+        // Nested nodes; not value types
+
+        try {
+
+            Node currentNode = (Node)(Class.forName(nodesPackageName +
+                                "."+ name).newInstance());
+            
+            if (! currentNodes.isEmpty()) {
+                
+                // Child node is some field of the parent node.
+                // To determine which field is to be set,
+                // we use the containterField property.
+                
+                Node parentNode = currentNodes.peek();
+                String field = currentNode.containerField();
+                
+                Class<?> currentFieldType = parentNode.getClass().
+                        getDeclaredMethod("get" +
+                        Character.toUpperCase(field.charAt(0)) +
+                        field.substring(1)).getReturnType();
+                
+                /****** Invoking setXxx(value) ******/
+                parentNode.getClass().getDeclaredMethod("set" +
+                    Character.toUpperCase(field.charAt(0)) + field.substring(1),
+                    new Class[] {currentFieldType}).
+                    invoke(currentNodes.peek(), currentNode);
+                
+            }
+            
+            currentNodes.push(currentNode);
+            
+        } catch (Exception e) {
+            throw new Error("Could not instantiate node " + name);
+        }
     }
     
+    /**
+     * Called whenever the parser meets a closing tag.
+     * 
+     * @param name tag name
+     */
     private void closingTag(String name) {
         
-System.out.println("Closing: " + name);
+                            System.out.println("Closing: " + name);
+                            
+        if (name.equals("X3D") || name.equals("Scene")) {
+            
+            // X3D and Scene are simply
+            // root nodes with no functionality
+            return;
+        }
         
+        Node closed = currentNodes.pop();
+        
+        // Adds a root node to the resultingNodes array
+        if (currentNodes.isEmpty()) {
+            resultingNodes.add(closed);
+        }
     }
     
-    private void attribute(String name, String value) {
+    /**
+     * Called whenever the parser meets an attribute
+     * inside the opening tag.
+     * 
+     * @param name attribute name
+     */
+    private void attribute(String name) {
         
-System.out.println("Attribute: " + name + " set to " + value);
+                            System.out.println("Attribute: " + name);
 
+        match("'");
+        
+        // DEF keyword
+        if (name.equals("DEF")) {
+            
+            Node currentNode = currentNodes.peek();
+            currentNode.setId(lookahead);
+            
+            defNodesTable.put(lookahead, currentNode);
+            
+            nextToken();
+        }
+        // USE keyword
+        else if (name.equals("USE")) {
+            
+            // The just instantiated Node was a "fake node"
+            currentNodes.pop();
+            
+            // Get the Node from the hash table
+            Node node = defNodesTable.get(lookahead);
+            
+            if (node != null) {
+                if (! currentNodes.isEmpty()) {
+                    
+                    
+                    // Child node is some field of the parent node.
+                    // To determine which field is to be set,
+                    // we use the containterField property.
+                    
+                    Node parentNode = currentNodes.peek();
+                    String field = node.containerField();
+                    
+                    try {
+                        
+                        Class<?> currentFieldType = parentNode.getClass().
+                                getDeclaredMethod("get" +
+                                Character.toUpperCase(field.charAt(0)) +
+                                field.substring(1)).getReturnType();
+                        
+                        /****** Invoking setXxx(value) ******/
+                        parentNode.getClass().getDeclaredMethod("set" +
+                            Character.toUpperCase(field.charAt(0)) + field.substring(1),
+                            new Class[] {currentFieldType}).
+                            invoke(currentNodes.peek(), node);
+                    } catch (Exception e) {
+                        
+                        throw new Error("Could not use node " + lookahead);
+                    }
+                }
+                
+                currentNodes.push(node);
+                
+            } else {
+
+                throw new SyntaxError("Node named '" + lookahead +
+                        "' is not declared.", tokenizer.lineno());
+            }
+            
+            nextToken();
+        }
+        // Fields (value types, NOT nested nodes)
+        else {
+            
+            Node currentNode = currentNodes.peek();
+            Class<?> currentFieldType;
+            
+            try {
+                /****** Getting the field type ******/
+                currentFieldType = currentNode.getClass().
+                        getDeclaredMethod("get" +
+                    Character.toUpperCase(name.charAt(0)) +
+                    name.substring(1)).getReturnType();
+
+                Object attrValue = parseValueType(currentFieldType);
+                
+                /****** Invoking setXxx(value) ******/
+                currentNode.getClass().getDeclaredMethod("set" +
+                    Character.toUpperCase(name.charAt(0)) + name.substring(1),
+                    new Class[] {currentFieldType}).
+                    invoke(currentNode, attrValue);
+    
+            } catch (Exception e) {
+                System.out.print(e.getMessage());
+                throw new Error("Could not set the value of field " + name);
+            }
+        }
+
+        match("'");
     }
     
+    /**
+     * Called whenever the parser meets a text node.
+     * 
+     * @param value text
+     */
     private void textNode(String value) {
         
-System.out.println("Text node: " + value);
+                            System.out.println("Text node: " + value);
         
+        throw new SyntaxError("No text nodes allowed in X3D format",
+                                                tokenizer.lineno());
     }
     
 
@@ -196,34 +370,10 @@ System.out.println("Text node: " + value);
     }
     
     /**
-     * Determines whether the lookahead token
-     * coincides with the given one.
+     * Returns the lookahead token.
      */
-    public boolean lookahead(String token) {
-        return (lookahead != null && token != null && lookahead.equals(token));
-    }
-    
-    /**
-     * Compares the token with the lookahead symbol and
-     * advances to the next input terminal if they match.
-     * 
-     * @param token Token to be matched
-     * @throws SyntaxError if token isn't matched
-     * @return true if token is matched and the next token is read,
-     */
-    public boolean match(String token) throws SyntaxError {
-        
-        if(token.equals(lookahead)) {
-
-            nextToken();
-            
-            return true;
-            
-        } else {
-            
-            throw new SyntaxError("Expected '" + token + "', but got '" + 
-                                    lookahead + "'", tokenizer.lineno());
-        }
+    public String lookahead() {
+        return lookahead;
     }
     
     /**
@@ -260,23 +410,29 @@ System.out.println("Text node: " + value);
         }
     }
 
-
+    
+    /*************************************************************
+     *                   Token operations.                       *
+     *************************************************************/
+    
     /**
      * Reads the next token from the input.
      */
+    @Override
     public void nextToken() {
         
         try {
             int ttype = tokenizer.nextToken();
             
             if (ttype == '<' || ttype == '>' ||
-                ttype == '/'|| ttype == '=') {
+                ttype == '/' || ttype == '=' ||
+                ttype == '\'') {
                 // Terminals
                 lookahead = String.valueOf(((char)tokenizer.ttype));
             } else if (ttype == StreamTokenizer.TT_WORD) {
                 // Non-terminals
                 lookahead = tokenizer.sval;
-            }  else if (ttype == '"' || ttype == '\'') {
+            } else if (ttype == '"') {
                 // Quoted Strings
                 lookahead = tokenizer.sval;
             } else if (ttype == StreamTokenizer.TT_EOF) {
@@ -299,7 +455,7 @@ System.out.println("Text node: " + value);
         defNodesTable = new HashMap<String, Node>();
         //protoNodesTable = new HashMap<String, Node>();
         currentNodes = new Stack<Node>();
-        currentTag = new Stack<String>();
+        currentTags = new Stack<String>();
         readingTag = false;
     }
     
@@ -321,15 +477,13 @@ System.out.println("Text node: " + value);
     
     /* current Attribute id */
     private String currentAttribute;
-    /* current Tag (Node) Type */
-    //private String currentTag;
     
     // ! NB: The nested structure of XML nodes requires
     //       maintaining of a tag stacks: for tag names
     //       and for the appropriate nodes (if needed).
     
     /* Tag stack */
-    private Stack<String> currentTag;
+    private Stack<String> currentTags;
     /* Node stack */
     private Stack<Node> currentNodes;
 }

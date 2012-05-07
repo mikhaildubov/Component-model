@@ -1,7 +1,7 @@
 package ru.hse.se.types;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class SFString extends ValueType {
     
@@ -24,7 +24,7 @@ public class SFString extends ValueType {
      *      \", backslashes must be \\...  *
      ***************************************
      */
-    public static SFString parse(VRMLParser parser) throws SyntaxError {
+    public static SFString parse(Parser parser) throws SyntaxError {
         SFString res = new SFString(parser.lookahead());
         parser.nextToken();
         return res;

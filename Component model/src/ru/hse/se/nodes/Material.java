@@ -18,6 +18,10 @@ public class Material extends Node implements Serializable {
         return diffuseColor;
     }
     
+    public String containerField() {
+        return "material";
+    }
+    
     private SFColor diffuseColor;
     
     private static final long serialVersionUID = 1L;

@@ -24,6 +24,10 @@ public class Shape extends Node implements Serializable {
         return geometry;
     }
     
+    public String containerField() {
+        return "children";
+    }
+    
     private Appearance appearance;
     private Geometry geometry;
     

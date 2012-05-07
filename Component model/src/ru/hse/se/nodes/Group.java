@@ -16,6 +16,10 @@ public class Group extends Node implements Serializable {
     public MFNode getChildren() {
         return children;
     }
+    
+    public String containerField() {
+        return "children";
+    }
 
     private MFNode children;
     

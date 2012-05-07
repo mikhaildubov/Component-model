@@ -18,6 +18,8 @@ public abstract class Node extends VRMLType implements Serializable {
         return id;
     }
     
+    public abstract String containerField();
+    
     protected String id;
     
     private static final long serialVersionUID = 1L;

@@ -8,5 +8,9 @@ public class Geometry extends Node implements Serializable {
         
     }
     
+    public String containerField() {
+        return "geometry";
+    }
+    
     private static final long serialVersionUID = 1L;
 }

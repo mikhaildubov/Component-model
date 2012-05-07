@@ -3,7 +3,7 @@ package ru.hse.se.types;
 import java.util.ArrayList;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class MFBool extends MFValueType<SFBool> {
 
@@ -11,7 +11,7 @@ public class MFBool extends MFValueType<SFBool> {
         super(value);
     }
     
-    public static MFBool parse(VRMLParser parser) throws SyntaxError {
+    public static MFBool parse(Parser parser) throws SyntaxError {
         return MFValueType.<SFBool, MFBool>parseGeneric
                                     (parser, MFBool.class, SFBool.class);
     }

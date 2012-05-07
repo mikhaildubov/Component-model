@@ -25,31 +25,15 @@ public class VRMLParser extends Parser {
     @Override
     protected void setUpTokenizer() {
         
-        tokenizer.resetSyntax();
-        
-        tokenizer.wordChars('a', 'z'); // Id's
-        tokenizer.wordChars('A', 'Z'); // Id's
-        tokenizer.wordChars('0', '9'); // Id's
-        tokenizer.wordChars('_', '_'); // Id's can contain '_'
-        tokenizer.wordChars('+', '+'); // For floats and ints
-        tokenizer.wordChars('-', '-'); // For floats and ints
-        tokenizer.wordChars('.', '.'); // For floats
+        super.setUpTokenizer();
         
         tokenizer.commentChar('#');
-        tokenizer.quoteChar('"');
 
         // Terminals
         tokenizer.ordinaryChar('{');
         tokenizer.ordinaryChar('}');
         tokenizer.ordinaryChar('[');
         tokenizer.ordinaryChar(']');
-        tokenizer.ordinaryChar('.');
-        
-        tokenizer.whitespaceChars(' ', ' ');
-        tokenizer.whitespaceChars('\n', '\n');
-        tokenizer.whitespaceChars('\t', '\t');
-        tokenizer.whitespaceChars('\r', '\r');
-        tokenizer.whitespaceChars(',', ','); // => for [ children ]
 
         //tokenizer.parseNumbers(); // => No! Bad for advanced float/int32 parsing
         tokenizer.lowerCaseMode(false); // VRML is not case-sensitive
@@ -142,6 +126,11 @@ public class VRMLParser extends Parser {
                (parseNode());
     }
     
+    /**
+     * Parses the next Node from the input stream.
+     * Needed for MFNode parsing.
+     */
+    @Override
     public Node parseChildNode() {
         if (parseNodeStatement()) {
             return currentNodes.pop();
@@ -225,7 +214,7 @@ public class VRMLParser extends Parser {
         
         return (lookahead("PROTO") && parseProto()) ||
         
-               (lookahead("EXTERNPROTO") /* && ...Later...*/);
+               (lookahead("EXTERNPROTO") /* && ...ToDo...*/);
     }
     
     /************************************
@@ -250,7 +239,7 @@ public class VRMLParser extends Parser {
      ************************************/
     private boolean parseRouteStatement() {
         
-        return (lookahead("ROUTE") && match("ROUTE") /* && ...Later...*/);
+        return (lookahead("ROUTE") && match("ROUTE") /* && ...ToDo...*/);
     }
     
     /************************************
@@ -261,7 +250,7 @@ public class VRMLParser extends Parser {
      ************************************/
     private boolean parseScriptBody() {
         
-        // Later
+        // ToDo
         
         return false;
     }
@@ -289,44 +278,11 @@ public class VRMLParser extends Parser {
     }
     
     /**
-     * Determines whether the lookahead token
-     * coincides with the given one.
-     */
-    public boolean lookahead(String token) {
-        return (lookahead != null && token != null && lookahead.equals(token));
-    }
-    
-    /**
      * Returns the lookahead token.
      */
+    @Override
     public String lookahead() {
-        return lookahead;
-    }
-    
-    /**
-     * Compares the token with the lookahead symbol and
-     * advances to the next input terminal if they match.
-     * 
-     * Note: VRML is case sensitive.
-     * 
-     * @param token Token to be matched
-     * @throws SyntaxError if token isn't matched
-     * @return true if token is matched and the next token is read,
-     */
-    public boolean match(String token) throws SyntaxError {
-        
-        if(token.equals(lookahead)) {
-
-            nextToken();
-            
-            return true;
-            
-        } else {
-            
-            throw new SyntaxError("Expected '" + token + "', but got '" + 
-                                    (lookahead == null ? numahead : lookahead) + "'",
-                                    tokenizer.lineno());
-        }
+        return (lookahead == null ? String.valueOf(numahead) : lookahead);
     }
     
     /**
@@ -374,7 +330,8 @@ public class VRMLParser extends Parser {
             
         } else {
             
-            throw new SyntaxError("'" + lookahead + "' is not a valid id", tokenizer.lineno());
+            throw new SyntaxError("'" + lookahead + "' is not a valid id",
+                                                    tokenizer.lineno());
         }
     }
     
@@ -393,7 +350,8 @@ public class VRMLParser extends Parser {
             
         } else {
             
-            throw new SyntaxError("'" + lookahead + "' is not a valid id", tokenizer.lineno());
+            throw new SyntaxError("'" + lookahead + "' is not a valid id",
+                                                    tokenizer.lineno());
         }
     }
     
@@ -412,13 +370,15 @@ public class VRMLParser extends Parser {
             
         } else {
             
-            throw new SyntaxError("'" + lookahead + "' is not a valid id", tokenizer.lineno());
+            throw new SyntaxError("'" + lookahead + "' is not a valid id",
+                                                    tokenizer.lineno());
         }
     }
     
     /**
      * Reads the next token from the input.
      */
+    @Override
     public void nextToken() {
         
         try {
@@ -431,7 +391,7 @@ public class VRMLParser extends Parser {
             } else if (ttype == StreamTokenizer.TT_WORD) {
                 // Non-terminals
                 lookahead = tokenizer.sval;
-            }  else if (ttype == '"') {
+            } else if (ttype == '"') {
                 // Quoted Strings
                 lookahead = tokenizer.sval;
             } else if (ttype == StreamTokenizer.TT_EOF) {
@@ -445,8 +405,6 @@ public class VRMLParser extends Parser {
     /*************************************************************
      *            Building up the JavaBeans components.          *
      *************************************************************/
-    
-    private static final String nodesPackageName = "ru.hse.se.nodes";
     
     /**
      * Instantiates the next Node Bean by its type.
@@ -468,7 +426,9 @@ public class VRMLParser extends Parser {
             // Pushing the node into the stack
             currentNodes.push(node);
             
-System.out.println("Instantiated Node" + (currentId == null ? "" : (" '"+currentId)+"'") + " of type " + currentType);  
+                                System.out.println("Instantiated Node" +
+                                        (currentId == null ? "" : (" '"+currentId)+"'")
+                                        + " of type " + currentType);  
 
             currentId = null;
             
@@ -491,14 +451,16 @@ System.out.println("Instantiated Node" + (currentId == null ? "" : (" '"+current
             
             currentNodes.push(node);
             
-System.out.println("Instantiated existing Node" + (currentId == null ? "" : (" '"+currentId)+"'"));  
+                                System.out.println("Instantiated existing Node" +
+                                  (currentId == null ? "" : (" '"+currentId)+"'"));  
             
             currentId = null;
 
             return true;
         } else {
 
-            throw new SyntaxError("Node named '" + currentId + "' is not declared.", tokenizer.lineno());
+            throw new SyntaxError("Node named '" + currentId +
+                    "' is not declared.", tokenizer.lineno());
         }
     }
     
@@ -508,8 +470,9 @@ System.out.println("Instantiated existing Node" + (currentId == null ? "" : (" '
     private boolean addRootNode() {
         
         resultingNodes.add(currentNodes.pop());
-System.out.println("Added root node");
-System.out.println();
+        
+                            System.out.println("Added root node");
+                            System.out.println();
         
         return true;        
     }
@@ -555,79 +518,25 @@ System.out.println();
             }
         }
         
-        /****** b) Value type => call of the "parse" method in the type class via reflection ******/
-        else if (ValueType.class.isAssignableFrom(currentFieldType)) {
-            try {
-                value = currentFieldType.getDeclaredMethod
-                    ("parse", VRMLParser.class).invoke(null, this);
-            } catch (Exception e) {}
-            
-            if (value == null) {
-                throw new Error("Parse rules for type " + currentFieldType.getName() + " not defined.");
-            }
-        }
-        
-        /****** c) Java primitive types => use VRML wrappers (SFBool, SFFloat, ...) ******/
-        // TODO: TEST!
-        else if (currentFieldType == int.class) { 
-            value = SFInt32.parse(this).getValue();
-              
-        } else if (currentFieldType == int[].class) { 
-            ArrayList<SFInt32> val = MFInt32.parse(this).getValue();
-            value = new int[val.size()];
-            for (int i = 0; i < val.size(); i++) {
-                ((int[])value)[i] = val.get(i).getValue();
-            }
-            
-        } else if (currentFieldType == boolean.class) { 
-            value = SFBool.parse(this).getValue();
-            
-        } else if (currentFieldType == boolean[].class) { 
-            ArrayList<SFBool> val = MFBool.parse(this).getValue();
-            value = new boolean[val.size()];
-            for (int i = 0; i < val.size(); i++) {
-                ((boolean[])value)[i] = val.get(i).getValue();
-            }
-            
-        } else if (currentFieldType == double.class) { 
-            value = SFFloat.parse(this).getValue();
-            
-        } else if (currentFieldType == double[].class) {
-            ArrayList<SFFloat> val = MFFloat.parse(this).getValue();
-            value = new double[val.size()];
-            for (int i = 0; i < val.size(); i++) {
-                ((double[])value)[i] = val.get(i).getValue();
-            }
-            
-        } else if (currentFieldType == float.class) { 
-            value = (float)(SFFloat.parse(this).getValue());
-            
-        } else if (currentFieldType == float[].class) {
-            ArrayList<SFFloat> val = MFFloat.parse(this).getValue();
-            value = new double[val.size()];
-            for (int i = 0; i < val.size(); i++) {
-                ((float[])value)[i] = (float)(val.get(i).getValue());
-            }
-            
-        }
-        
-        //else if (currentFieldType == ArrayList.class) {
-        // TODO: Process ArrayLists?    
-        //}
-        
-        /****** d) Error otherwise ******/
+        /****** b) Value type => call "parse" method in the type class via reflection ******/
         else {
-            throw new Error("Value of unknown type");
+            // Implementation - in the superclass.
+            value = parseValueType(currentFieldType);
         }
 
         /****** Invoking setXxx(value) ******/
         try {
             currentNodes.peek().getClass().getDeclaredMethod("set" +
                 Character.toUpperCase(currentField.peek().charAt(0)) +
-                currentField.peek().substring(1), new Class[] {currentFieldType}).
+                currentField.peek().substring(1),
+                new Class[] {currentFieldType}).
                 invoke(currentNodes.peek(), value);
             
-System.out.println("    Set the " + currentField.peek() + " field to value of type " + value.getClass().getName() + ": " + value.toString());
+                                    System.out.println("    Set the " +
+                                        currentField.peek()
+                                        + " field to value of type " +
+                                        value.getClass().getName() +
+                                        ": " + value.toString());
             
             currentField.pop();
             
@@ -666,7 +575,7 @@ System.out.println("    Set the " + currentField.peek() + " field to value of ty
     //private HashMap<String, Node> protoNodesTable;
     
     /* current Token */
-    private String lookahead;
+    protected String lookahead;
     private double numahead;
     
     /* current Node id */

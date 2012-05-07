@@ -1,7 +1,7 @@
 package ru.hse.se.types;
 
 import ru.hse.se.parsers.SyntaxError;
-import ru.hse.se.parsers.VRMLParser;
+import ru.hse.se.parsers.Parser;
 
 public class SFInt32 extends ValueType {
     
@@ -21,7 +21,7 @@ public class SFInt32 extends ValueType {
      *    [[+]|-]{[0-9]+|0x[0-9a-fA-F]+}   *
      ***************************************
      */
-    public static SFInt32 parse(VRMLParser parser) throws SyntaxError {
+    public static SFInt32 parse(Parser parser) throws SyntaxError {
 
         String lookahead = parser.lookahead();
         
