@@ -4,7 +4,6 @@ import ru.hse.se.nodes.Node;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -51,15 +50,9 @@ public class XMLParser extends Parser {
      * and returns an ArrayList of root nodes.
      */
     @Override
-    protected ArrayList<Node> parseScene() throws SyntaxError, IOException {
+    protected void parseScene() throws IOException {
 
-        init(); // Initialization - to read the first token
-                
-        // !!! The entry point !!!
         parseXML();
-        // As a result - the filled resultingNodes array.
-        
-        return resultingNodes;
     }
     
     /**
@@ -75,24 +68,27 @@ public class XMLParser extends Parser {
         while (lookahead != null) {
             
             // 1. Opening or closing tag starts
-            if (lookahead("<")) {
-                match("<");
+            if (tryMatch("<")) {
+
                 readingTag = true;
                 
                 if (lookahead("/")) {
                     match("/");
                     if (currentTags.isEmpty()) {
-                        throw new SyntaxError ("Closing tag + '" + lookahead
+                        syntaxError(new SyntaxError ("Closing tag + '" + lookahead
                                 + "' does not match any opening tag.",
-                                tokenizer.lineno());
+                                tokenizer.lineno()));
+                    } else {
+                        String openingTag = currentTags.pop();
+                        
+                        if (! lookahead(openingTag)) {
+                            syntaxError(new SyntaxError ("Closing tag + '" + lookahead
+                                              + "' does not match the opening tag + '"
+                                              + openingTag + "'.", tokenizer.lineno()));
+                        } else {
+                            closingTag(lookahead);
+                        }
                     }
-                    String openingTag = currentTags.pop();
-                    if (! lookahead(openingTag)) {
-                        throw new SyntaxError ("Closing tag + '" + lookahead
-                                      + "' does not match the opening tag + '"
-                                      + openingTag + "'.", tokenizer.lineno());
-                    }
-                    closingTag(lookahead);
                     
                     nextToken();
                     match(">");
@@ -106,14 +102,13 @@ public class XMLParser extends Parser {
                 }
             }
             // 2. Opening tag ends
-            else if (lookahead(">")) {
+            else if (tryMatch(">")) {
                 
-                match(">");
                 readingTag = false;
             }
             // 3. Opening tag is closed at once
-            else if (lookahead("/")) {
-                match("/");
+            else if (tryMatch("/")) {
+
                 match(">");
                 
                 readingTag = false;
@@ -201,7 +196,7 @@ public class XMLParser extends Parser {
             currentNodes.push(currentNode);
             
         } catch (Exception e) {
-            throw new Error("Could not instantiate node " + name);
+            error(new Error("Could not instantiate node " + name));
         }
     }
     
@@ -223,9 +218,9 @@ public class XMLParser extends Parser {
         
         Node closed = currentNodes.pop();
         
-        // Adds a root node to the resultingNodes array
+        // Adds a root node to the sceneGraph array
         if (currentNodes.isEmpty()) {
-            resultingNodes.add(closed);
+            sceneGraph.add(closed);
         }
     }
     
@@ -285,7 +280,7 @@ public class XMLParser extends Parser {
                             invoke(currentNodes.peek(), node);
                     } catch (Exception e) {
                         
-                        throw new Error("Could not use node " + lookahead);
+                        error(new Error("Could not use node " + lookahead));
                     }
                 }
                 
@@ -293,8 +288,8 @@ public class XMLParser extends Parser {
                 
             } else {
 
-                throw new SyntaxError("Node named '" + lookahead +
-                        "' is not declared.", tokenizer.lineno());
+                syntaxError(new SyntaxError("Node named '" + lookahead +
+                        "' is not declared.", tokenizer.lineno()));
             }
             
             nextToken();
@@ -322,7 +317,7 @@ public class XMLParser extends Parser {
     
             } catch (Exception e) {
                 System.out.print(e.getMessage());
-                throw new Error("Could not set the value of field " + name);
+                error(new Error("Could not set the value of field " + name));
             }
         }
 
@@ -338,8 +333,8 @@ public class XMLParser extends Parser {
         
                             System.out.println("Text node: " + value);
         
-        throw new SyntaxError("No text nodes allowed in X3D format",
-                                                tokenizer.lineno());
+        syntaxError(new SyntaxError("No text nodes allowed in X3D format",
+                                                      tokenizer.lineno()));
     }
     
 
@@ -351,7 +346,7 @@ public class XMLParser extends Parser {
      * Initializes the parser by reading the first
      * token and storing it in the lookahead variable.
      */
-    private void init() throws IOException {
+    protected void init() throws IOException {
         
         initFields();
         
@@ -395,12 +390,13 @@ public class XMLParser extends Parser {
             currentAttribute = lookahead;
             nextToken();
             
-            return true;
-            
         } else {
             
-            throw new SyntaxError("'" + lookahead + "' is not a valid id", tokenizer.lineno());
+            syntaxError(new SyntaxError("'" + lookahead + "' is not a valid id",
+                                                            tokenizer.lineno()));
         }
+        
+        return true;
     }
 
     
@@ -410,9 +406,10 @@ public class XMLParser extends Parser {
     
     /**
      * Reads the next token from the input.
+     * @returns false when the next token is unavailable, true otherwise
      */
     @Override
-    public void nextToken() {
+    public boolean nextToken() {
         
         try {
             int ttype = tokenizer.nextToken();
@@ -429,9 +426,14 @@ public class XMLParser extends Parser {
                 // Quoted Strings
                 lookahead = tokenizer.sval;
             } else if (ttype == StreamTokenizer.TT_EOF) {
-                lookahead = null;
+                lookahead = null; // to indicate EOF
+                return false;
             } // No TT_NUMBER or TT_EOL can arise
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            return false;
+        }
+        
+        return true;
     }
     
     
@@ -444,16 +446,12 @@ public class XMLParser extends Parser {
      * Initializes the private fields before the parser starts.
      */
     private void initFields() {
-        resultingNodes = new ArrayList<Node>();
         defNodesTable = new HashMap<String, Node>();
         //protoNodesTable = new HashMap<String, Node>();
         currentNodes = new Stack<Node>();
         currentTags = new Stack<String>();
         readingTag = false;
     }
-    
-    /* The result of scene parsing */
-    private ArrayList<Node> resultingNodes;
     
     /* 
      * Hash table that stores named (DEF) nodes

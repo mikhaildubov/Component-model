@@ -27,11 +27,10 @@ public abstract class Parser {
      * 
      * @param reader The input stream reader
      * @return nodes array of root nodes
-     * @throws SyntaxError
-     * @throws IOException
+     * @throws IOException if there is no input in the stream
      */
     public ArrayList<Node> parse(InputStreamReader reader)
-                                throws SyntaxError, IOException {
+                                throws IOException {
 
         tokenizer = new StreamTokenizer(new BufferedReader(reader));
         
@@ -39,9 +38,21 @@ public abstract class Parser {
         
         setUpTokenizer();
         
-        ArrayList<Node> sceneGraph = parseScene();
+        init();
 
-        return sceneGraph;
+        sceneGraph = new ArrayList<Node>();
+        parsingErrors = new ArrayList<Error>();
+
+        // !!! The entry point !!!
+        parseScene();
+        // As a result - the filled sceneGraph array,
+        // that may be null if there were parsing errors.
+
+        if (! parsingErrors.isEmpty()) {
+            return null;
+        } else {
+            return sceneGraph;
+        }
     }
 
     /**
@@ -69,10 +80,17 @@ public abstract class Parser {
     }
     
     /**
-     * Performs the parsing of the input file
-     * and returns an ArrayList of root nodes.
+     * Initializes the parser by reading the first
+     * token and storing it in the lookahead variable.
      */
-    protected abstract ArrayList<Node> parseScene() throws SyntaxError, IOException;
+    protected abstract void init() throws IOException;
+    
+    /**
+     * Performs the parsing of the input file
+     * and fills out the ArrayList of root nodes,
+     * namely the sceneGraph array.
+     */
+    protected abstract void parseScene() throws IOException;
     
     /**
      * Parses the next Node from the input stream.
@@ -183,38 +201,125 @@ public abstract class Parser {
     
     /**
      * Reads the next token from the input.
+     * @returns false when the next token is unavailable, true otherwise
      */
-    public abstract void nextToken();
+    public abstract boolean nextToken();
     
     /**
      * Compares the token with the lookahead symbol and
-     * advances to the next input terminal if they match.
+     * advances to the next input terminal if they match,
+     * registers a syntax error otherwise
      * 
      * Note: The method is case sensitive.
      * 
      * @param token Token to be matched
-     * @throws SyntaxError if token isn't matched
-     * @return true if token is matched and the next token is read,
+     * @return true
      */
-    public boolean match(String token) throws SyntaxError {
+    public boolean match(String token) {
         
-        if(token.equals(lookahead())) {
+        if(lookahead().equals(token)) {
 
             nextToken();
             
-            return true;
-            
         } else {
             
-            throw new SyntaxError("Expected '" + token + "', but got '" + 
+            syntaxError(new SyntaxError("Expected '" + token + "', but got '" + 
                                     lookahead() + "'",
-                                    tokenizer.lineno());
+                                    tokenizer.lineno()));
         }
+        
+        return true;
+    }
+    
+    /**
+     * Determines whether the lookahead token
+     * is equal to the one passed as a parameter
+     * and matches it if the result is true.
+     * 
+     * @param token the token
+     * @return true if the matching was successful, false otherwise
+     */
+    protected boolean tryMatch(String token) {
+        if (lookahead(token)) {
+            match(token);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Processes a syntax error.
+     * 
+     * @param e the syntax error object
+     */
+    protected void syntaxError(SyntaxError e) {
+        parsingErrors.add(e);
+    }
+    
+    /**
+     * Processes a parsing error.
+     * 
+     * @param e the error object
+     */
+    protected void error(Error e) {
+        parsingErrors.add(e);
+    }
+    
+    /**
+     * Returns the list of parsing errors.
+     * 
+     * @return the ArrayList of parsing error objects
+     */
+    public ArrayList<Error> getParsingErrors() {
+        return parsingErrors;
+    }
+    
+    protected boolean isNodeName(String str) {
+        for (String s : nodeNames) {
+            if (s.equals(str)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Registers new nodes that can appear in
+     * the input file. Registering is needed
+     * in order for the parser to be able
+     * to check for error during the parsing.
+     * 
+     * @param name array of node class names
+     */
+    public void registerNodes(ArrayList<String> names) {
+        nodeNames.addAll(names);
     }
 
     /** Tokenizer */
     protected StreamTokenizer tokenizer;
     
+    /** The result of scene parsing */
+    protected ArrayList<Node> sceneGraph;
+    
+    /** The errors that occured during parsing */
+    protected ArrayList<Error> parsingErrors;
+    
     /** The nodes package name (needed for reflection) */
     protected static final String nodesPackageName = "ru.hse.se.nodes";
+    
+    /** The list of possible node names */
+    protected static ArrayList<String> nodeNames;
+    
+    // Registering standard node names
+    {
+        nodeNames = new ArrayList<String>();
+        nodeNames.add("Appearance");
+        nodeNames.add("Box");
+        nodeNames.add("Group");
+        nodeNames.add("Material");
+        nodeNames.add("Shape");
+        nodeNames.add("Sphere");
+        nodeNames.add("Text");
+    }
 }

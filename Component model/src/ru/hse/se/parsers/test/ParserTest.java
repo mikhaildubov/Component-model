@@ -1,8 +1,13 @@
 package ru.hse.se.parsers.test;
 
 import ru.hse.se.nodes.Node;
+import ru.hse.se.parsers.Parser;
+import ru.hse.se.parsers.SyntaxError;
 import ru.hse.se.types.ValueType;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -10,6 +15,39 @@ import java.util.Stack;
 import junit.framework.TestCase;
 
 public class ParserTest extends TestCase {
+    
+    public void parserTest(Parser parser, String fileName) throws FileNotFoundException {
+
+        ArrayList<Node> result = null;
+        
+        try {
+            result = parser.parse(new FileReader(fileName));
+            
+            System.out.println();
+
+            if (result != null) {
+                // PARSING SUCCEEDED,
+                // Print the textual scene graph representation
+                introspectNodes(result);
+                
+            } else {
+                // PARSING FAILED,
+                // Print the errors list
+                for (Error e : parser.getParsingErrors()) {
+                    if (e instanceof SyntaxError) {
+                        System.out.print("** SYNTAX ERROR **\t");
+                    } else {
+                        System.out.print("** ERROR **\t");
+                    }
+                    
+                    System.out.println(e.getMessage());
+                }
+            }
+            
+        } catch (IOException e) {
+            System.out.println("\n* Something bad with the file *");
+        }
+    }
     
     protected void introspectNodes(ArrayList<Node> result) {
         System.out.println("\nresult.size = " + result.size() + "\n");
