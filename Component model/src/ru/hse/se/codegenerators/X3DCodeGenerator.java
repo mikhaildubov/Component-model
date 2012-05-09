@@ -30,15 +30,23 @@ public class X3DCodeGenerator extends CodeGenerator {
         nodes = new Stack<Node>();
         this.output = output;
         
+        output.println("<Scene>");
+        nodes.push(null); // Simulates the Scene node
         for (int i = 0; i < sceneGraph.size(); i++) {
             process(sceneGraph.get(i));
             output.println();
         }
+        nodes.pop();
+        output.println("</Scene>");
     }
     
     private void process(Node n) {
         
         nodes.push(n);
+        
+        for (int i = 0; i < nodes.size()-1; i++) {
+            output.print("  ");
+        }
         
         if (n.getId() != null) {
             // Already described; write "USE"
@@ -96,9 +104,6 @@ public class X3DCodeGenerator extends CodeGenerator {
                     // Nested nodes
                     if (Node.class.isAssignableFrom(m.getReturnType())) {
                         
-                        for (int i = 0; i < 2*(nodes.size()) - 1; i++) {
-                            output.print("  ");
-                        }
                         Node child = (Node)m.invoke(n);
                         process(child);
                     }
@@ -107,7 +112,7 @@ public class X3DCodeGenerator extends CodeGenerator {
             
         } catch (Exception e) {}
 
-        for (int i = 0; i < 2*(nodes.size())-3; i++) {
+        for (int i = 0; i < nodes.size()-1; i++) {
             output.print("  ");
         }
         

@@ -69,7 +69,7 @@ public class VRMLCodeGenerator extends CodeGenerator {
                     // Node type => process recursively
                     if (Node.class.isAssignableFrom(m.getReturnType())) {
                         
-                        for (int i = 0; i < 2*(nodes.size()) - 1; i++) {
+                        for (int i = 0; i < nodes.size(); i++) {
                             output.print("  ");
                         }
                         output.print(field + " ");
@@ -81,7 +81,7 @@ public class VRMLCodeGenerator extends CodeGenerator {
                     else if (ValueType.class.isAssignableFrom(m.getReturnType())) {
                         
                         ValueType value = (ValueType)m.invoke(n);
-                        for (int i = 0; i < 2*(nodes.size()) - 1; i++) {
+                        for (int i = 0; i < nodes.size(); i++) {
                             output.print("  ");
                         }
                         output.println(field + " " + value);
@@ -90,7 +90,7 @@ public class VRMLCodeGenerator extends CodeGenerator {
             }
         } catch (Exception e) {}
 
-        for (int i = 0; i < 2*(nodes.size())-3; i++) {
+        for (int i = 0; i < nodes.size()-1; i++) {
             output.print("  ");
         }
         
