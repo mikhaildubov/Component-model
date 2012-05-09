@@ -7,7 +7,7 @@ import ru.hse.se.types.VRMLType;
 public abstract class Node extends VRMLType implements Serializable {
 
     public Node() {
-        id = "";
+        id = null;
     }
     
     public void setId(String id) {

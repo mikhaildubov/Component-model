@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import ru.hse.se.parsers.SyntaxError;
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.VRMLParser;
-import ru.hse.se.parsers.XMLParser;
+import ru.hse.se.parsers.X3DParser;
 
 @SuppressWarnings("unchecked")
 public abstract class MFValueType<T extends ValueType> extends MFType<T> {
@@ -60,7 +60,7 @@ public abstract class MFValueType<T extends ValueType> extends MFType<T> {
                 }
             }
             // XML
-            else if (parser instanceof XMLParser) {
+            else if (parser instanceof X3DParser) {
                 while(! parser.lookahead("'")) {
                     res.add((S)clS.getDeclaredMethod("parse",
                               Parser.class).invoke(null, parser));

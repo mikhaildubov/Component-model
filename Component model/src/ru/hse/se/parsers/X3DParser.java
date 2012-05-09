@@ -13,7 +13,7 @@ import java.util.Stack;
  * 
  * @author Mikhail Dubov
  */
-public class XMLParser extends Parser {
+public class X3DParser extends Parser {
 
     /**
      * Sets up the tokenizer object

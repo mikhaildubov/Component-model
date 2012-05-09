@@ -1,12 +1,12 @@
 package ru.hse.se.parsers.test;
 
 import java.io.FileNotFoundException;
-import ru.hse.se.parsers.XMLParser;
+import ru.hse.se.parsers.X3DParser;
 
-public class XMLParserTest extends ParserTest {
+public class X3DParserTest extends ParserTest {
     
     public void testParse() throws FileNotFoundException {
 
-        parserTest(new XMLParser(), "test\\Example.x3d");
+        parserTest(new X3DParser(), "test\\Example.x3d");
     }
 }
