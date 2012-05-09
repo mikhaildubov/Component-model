@@ -11,4 +11,9 @@ public class CodeGeneratorTest extends TestCase {
         
         CodeGenerator.X3DtoVRML(new FileReader("test\\Example.x3d"), System.out);
     }
+    
+    public void testVRMLtoX3D() throws FileNotFoundException {
+        
+        CodeGenerator.VRMLtoX3D(new FileReader("test\\Example.wrl"), System.out);
+    }
 }
