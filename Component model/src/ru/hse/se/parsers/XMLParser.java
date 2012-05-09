@@ -75,14 +75,14 @@ public class XMLParser extends Parser {
                 if (lookahead("/")) {
                     match("/");
                     if (currentTags.isEmpty()) {
-                        syntaxError(new SyntaxError ("Closing tag + '" + lookahead
+                        error(new SyntaxError ("Closing tag + '" + lookahead
                                 + "' does not match any opening tag.",
                                 tokenizer.lineno()));
                     } else {
                         String openingTag = currentTags.pop();
                         
                         if (! lookahead(openingTag)) {
-                            syntaxError(new SyntaxError ("Closing tag + '" + lookahead
+                            error(new SyntaxError ("Closing tag + '" + lookahead
                                               + "' does not match the opening tag + '"
                                               + openingTag + "'.", tokenizer.lineno()));
                         } else {
@@ -288,7 +288,7 @@ public class XMLParser extends Parser {
                 
             } else {
 
-                syntaxError(new SyntaxError("Node named '" + lookahead +
+                error(new SyntaxError("Node named '" + lookahead +
                         "' is not declared.", tokenizer.lineno()));
             }
             
@@ -333,7 +333,7 @@ public class XMLParser extends Parser {
         
                             System.out.println("Text node: " + value);
         
-        syntaxError(new SyntaxError("No text nodes allowed in X3D format",
+        error(new SyntaxError("No text nodes allowed in X3D format",
                                                       tokenizer.lineno()));
     }
     
@@ -392,7 +392,7 @@ public class XMLParser extends Parser {
             
         } else {
             
-            syntaxError(new SyntaxError("'" + lookahead + "' is not a valid id",
+            error(new SyntaxError("'" + lookahead + "' is not a valid id",
                                                             tokenizer.lineno()));
         }
         

@@ -58,8 +58,8 @@ public class VRMLParser extends Parser {
         
         // Some token left unparsed
         if (lookahead != null) {
-            error (new SyntaxError("Can't process lexemes starting at '" + lookahead + "'",
-                                                                        tokenizer.lineno()));  
+            error (new SyntaxError("Unrecognized lexeme sequence starting at '"
+                                        + lookahead + "'", tokenizer.lineno()));  
         }
     }
     
@@ -91,11 +91,13 @@ public class VRMLParser extends Parser {
         
         // ! NB: The order is essential, because of the FIRST elements
         
-        return (parseProtoStatement()) ||
+        return (lookahead != null) &&
+        
+               ((parseProtoStatement()) ||
         
                (parseRouteStatement()) ||
                
-               (parseNodeStatement() && addRootNode());
+               (parseNodeStatement() && addRootNode()));
     }
     
     /**
@@ -153,7 +155,12 @@ public class VRMLParser extends Parser {
                     match("{") && parseScriptBody() && match("}")) ||
         
                (tryMatchTypeId() && instantiateNode() &&
-                    match("{") && parseNodeBody() && match("}"));
+                    match("{") && parseNodeBody() && match("}")) ||
+                    
+                // Handling a typical syntax error case, trying to recover
+               (! lookahead("}") && error(new SyntaxError("'" + lookahead +
+                       "' is not a valid node name", tokenizer.lineno())) &&
+                       panicModeRecovery() && (currentNodes.push(null) == null));
     }
     
     /************************************
@@ -163,7 +170,7 @@ public class VRMLParser extends Parser {
      *     empty                        *
      ************************************/
     private boolean parseNodeBody() {
-        
+
         while (parseNodeBodyElement());
         
         return true;
@@ -319,7 +326,7 @@ public class VRMLParser extends Parser {
      * @return true
      */
     private boolean matchId() {
-        
+
         if(lookaheadIsId()) {
             
             currentId = lookahead;
@@ -327,7 +334,7 @@ public class VRMLParser extends Parser {
             
         } else {
             
-            syntaxError(new SyntaxError("'" + lookahead + "' is not a valid id",
+            error(new SyntaxError("'" + lookahead + "' is not a valid id",
                                                     tokenizer.lineno()));
         }
         
@@ -430,6 +437,41 @@ public class VRMLParser extends Parser {
         
         return true;
     }
+
+    /*************************************************************
+     *                      Error recovery.                      *
+     *************************************************************/
+    
+    /**
+     * Tries to recover from errors in order
+     * for the parser ro be able to continue
+     * reading the input stream.
+     * 
+     * See 4.1 in the "Dragon book" for technique description.
+     * 
+     * @return true, if recovery proceeded, false otherwise
+     */
+    private boolean panicModeRecovery() {
+        
+        // Trying to recover by reading parentheses
+        // until the end of the "damaged" block is reached
+        if (lookahead("{")) {
+            int parentheses = 1;
+            while (nextToken()) {
+                if (lookahead("{")) {
+                    parentheses++;
+                } else if (lookahead("}")) {
+                    parentheses--;
+                }
+                if (parentheses == 0) {
+                    nextToken(); 
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
         
     
 
@@ -473,28 +515,29 @@ public class VRMLParser extends Parser {
     /**
      * Searches for an existing Node Bean in the hash table
      * by its id and, if found, acts like instantiateNode().
+     * 
+     * @return true
      */
     private boolean instantiateNodeById() {
         
         Node node = defNodesTable.get(currentId);
         
-        if (node != null) {
+        // can be null
+        currentNodes.push(node);  
+        
+        if (node == null) {
             
-            currentNodes.push(node);
-            
-                                System.out.println("Instantiated existing Node" +
-                                  (currentId == null ? "" : (" '"+currentId)+"'"));  
-            
-            currentId = null;
-
-            return true;
+            error(new SyntaxError("Node named '" + currentId +
+                    "' is not declared.", tokenizer.lineno()));
         } else {
 
-            syntaxError(new SyntaxError("Node named '" + currentId +
-                         "' is not declared.", tokenizer.lineno()));
+            System.out.println("Instantiated existing Node" +
+              (currentId == null ? "" : (" '"+currentId)+"'"));             
+        }       
+        
+        currentId = null;
 
-            return false;
-        }
+        return true;
     }
     
     /**
@@ -502,10 +545,12 @@ public class VRMLParser extends Parser {
      */
     private boolean addRootNode() {
         
-        sceneGraph.add(currentNodes.pop());
-        
-                            System.out.println("Added root node");
+                            System.out.print("Added root node ");
+                            System.out.println(currentNodes.peek() == null ? "null" :
+                                      currentNodes.peek().getClass().getSimpleName());
                             System.out.println();
+        
+        sceneGraph.add(currentNodes.pop());
         
         return true;        
     }
@@ -545,34 +590,11 @@ public class VRMLParser extends Parser {
                 
             } else {
                 
-                if (lookahead("DEF") || lookahead("USE") || isNodeName(lookahead)) {
+                // involves currentNodes.push(...)
+                parseNodeStatement(); 
                 
-                    // involves currentNodes.push(...)
-                    parseNodeStatement(); 
-                    
-                    // after parseNodeStatement the node is on the top
-                    value = currentNodes.pop();
-                    
-                } else {
-                    
-                    value = null;
-                    syntaxError(new SyntaxError("'" + lookahead + "' is not a valid node name",
-                                                                          tokenizer.lineno()));
-                    // trying to recovery by reading parentheses
-                    if (lookahead("{")) {
-                        int parentheses = 1;
-                        while (nextToken()) {
-                            if (lookahead("{")) {
-                                parentheses++;
-                            } else if (lookahead("}")) {
-                                parentheses--;
-                            }
-                            if (parentheses == 0) {
-                                nextToken(); break;
-                            }
-                        }
-                    }
-                }
+                // after parseNodeStatement the node is on the top
+                value = currentNodes.pop();
             }
         }
         
@@ -599,6 +621,7 @@ public class VRMLParser extends Parser {
             currentField.pop();
             
             return true;
+            
         } catch (Exception e) {
             System.out.println();
             return false;

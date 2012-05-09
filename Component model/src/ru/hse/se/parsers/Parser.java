@@ -223,7 +223,7 @@ public abstract class Parser {
             
         } else {
             
-            syntaxError(new SyntaxError("Expected '" + token + "', but got '" + 
+            error(new SyntaxError("Expected '" + token + "', but got '" + 
                                     lookahead() + "'",
                                     tokenizer.lineno()));
         }
@@ -249,21 +249,15 @@ public abstract class Parser {
     }
     
     /**
-     * Processes a syntax error.
-     * 
-     * @param e the syntax error object
-     */
-    protected void syntaxError(SyntaxError e) {
-        parsingErrors.add(e);
-    }
-    
-    /**
      * Processes a parsing error.
      * 
      * @param e the error object
      */
-    protected void error(Error e) {
+    protected boolean error(Error e) {
+
         parsingErrors.add(e);
+        
+        return true;
     }
     
     /**
