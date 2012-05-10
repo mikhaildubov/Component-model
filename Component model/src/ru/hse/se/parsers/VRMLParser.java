@@ -453,6 +453,12 @@ public class VRMLParser extends Parser {
      */
     private boolean panicModeRecovery() {
         
+        // Recovery possibility - if the current
+        // or the next token is an opening parenthese.
+        if (! lookahead("{")) {
+            nextToken();
+        }
+        
         // Trying to recover by reading parentheses
         // until the end of the "damaged" block is reached
         if (lookahead("{")) {
