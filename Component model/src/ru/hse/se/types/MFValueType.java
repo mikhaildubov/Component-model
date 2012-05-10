@@ -48,8 +48,7 @@ public abstract class MFValueType<T extends ValueType> extends MFType<T> {
 
             // VRML
             if (parser instanceof VRMLParser) {
-                if (parser.lookahead("[")) {
-                    parser.match("[");
+                if (parser.tryMatch("[")) {
                     while(! parser.lookahead("]")) {
                         res.add((S)clS.getDeclaredMethod("parse",
                                   Parser.class).invoke(null, parser));

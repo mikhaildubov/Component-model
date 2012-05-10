@@ -69,12 +69,15 @@ public class VRMLCodeGenerator extends CodeGenerator {
                     // Node type => process recursively
                     if (Node.class.isAssignableFrom(m.getReturnType())) {
                         
-                        for (int i = 0; i < nodes.size(); i++) {
-                            output.print("  ");
-                        }
-                        output.print(field + " ");
                         Node child = (Node)m.invoke(n);
-                        process(child);
+                        
+                        if (child != null) {
+                            for (int i = 0; i < nodes.size(); i++) {
+                                output.print("  ");
+                            }
+                            output.print(field + " ");
+                            process(child);
+                        }
                     }
                     
                     // Value type => print value

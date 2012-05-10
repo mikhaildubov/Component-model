@@ -239,7 +239,7 @@ public abstract class Parser {
      * @param token the token
      * @return true if the matching was successful, false otherwise
      */
-    protected boolean tryMatch(String token) {
+    public boolean tryMatch(String token) {
         if (lookahead(token)) {
             match(token);
             return true;
@@ -253,7 +253,7 @@ public abstract class Parser {
      * 
      * @param e the error object
      */
-    protected boolean error(Error e) {
+    public boolean error(Error e) {
 
         parsingErrors.add(e);
         

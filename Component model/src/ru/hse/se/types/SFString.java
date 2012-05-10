@@ -25,6 +25,7 @@ public class SFString extends ValueType {
      ***************************************
      */
     public static SFString parse(Parser parser) throws SyntaxError {
+        // TODO: Check whether it is a string!
         SFString res = new SFString(parser.lookahead());
         parser.nextToken();
         return res;

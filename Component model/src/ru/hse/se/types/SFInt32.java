@@ -45,8 +45,8 @@ public class SFInt32 extends ValueType {
                 } else if (temp >= 'a' && temp <= 'f') {
                     res = 16*res + (10+temp-'a');
                 } else {
-                    throw new SyntaxError("Expected a hexadecimal integer, " +
-                            "but got '" + lookahead +"'", parser.tokenizer().lineno());
+                    parser.error(new SyntaxError("Expected a hexadecimal integer, " +
+                           "but got '" + lookahead +"'", parser.tokenizer().lineno()));
                 }
             }
             
@@ -55,8 +55,8 @@ public class SFInt32 extends ValueType {
             try {
                 res = Integer.parseInt(lookahead);
             } catch (Exception e) {
-                throw new SyntaxError("Expected an integer number, " +
-                        "but got '" + lookahead + "'", parser.tokenizer().lineno());
+                parser.error(new SyntaxError("Expected an integer number, " +
+                  "but got '" + lookahead + "'", parser.tokenizer().lineno()));
             }
             
         }

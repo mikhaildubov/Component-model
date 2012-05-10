@@ -24,16 +24,16 @@ public class SFFloat extends ValueType {
      */
     public static SFFloat parse(Parser parser) throws SyntaxError {
 
-        double res;
+        double res = 0;
         
         try {
             res = Double.parseDouble(parser.lookahead());
             parser.nextToken();
             
         } catch (Exception e) {
-            throw new SyntaxError("Expected a double-precision float number" +
+            parser.error(new SyntaxError("Expected a double-precision float number" +
                                     " in ANSI C format, but got '" +
-                                    parser.lookahead() + "'", parser.tokenizer().lineno());
+                                    parser.lookahead() + "'", parser.tokenizer().lineno()));
         }
         
         return new SFFloat(res);

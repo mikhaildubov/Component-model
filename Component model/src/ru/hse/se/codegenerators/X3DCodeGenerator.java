@@ -60,11 +60,11 @@ public class X3DCodeGenerator extends CodeGenerator {
             // Node name should be stored in hash table
             else {
                 output.print("<" + n.getClass().getSimpleName() +
-                               " DEF='" + n.getId() + "' ");
+                               " DEF='" + n.getId() + "'");
                 defNodes.add(n.getId());
             }
         } else {
-            output.print("<" + n.getClass().getSimpleName() + " ");
+            output.print("<" + n.getClass().getSimpleName());
         }
         
         try {
@@ -85,16 +85,16 @@ public class X3DCodeGenerator extends CodeGenerator {
                         
                         // Different patterns of printing values (!)
                         if (value instanceof MFValueType) {
-                            output.print(field + "='" + 
+                            output.print(" " + field + "='" + 
                                     value.toString().substring(2,
-                                    value.toString().length()-2) + "' ");
+                                    value.toString().length()-2) + "'");
                         } else {
-                            output.print(field + "='" + value + "' ");
+                            output.print(" " + field + "='" + value + "'");
                         }
                     }
                 }
             }
-            
+
             output.println(">");
             
             for (Method m : methods) {
@@ -105,7 +105,9 @@ public class X3DCodeGenerator extends CodeGenerator {
                     if (Node.class.isAssignableFrom(m.getReturnType())) {
                         
                         Node child = (Node)m.invoke(n);
-                        process(child);
+                        if (child != null) {
+                            process(child);
+                        }
                     }
                 }
             }

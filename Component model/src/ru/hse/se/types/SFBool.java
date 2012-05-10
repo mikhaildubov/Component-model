@@ -24,7 +24,7 @@ public class SFBool extends ValueType {
      */
     public static SFBool parse(Parser parser) throws SyntaxError {
 
-        boolean res;
+        boolean res = false;
         
         if (parser.lookahead("TRUE")) {
             parser.match("TRUE");
@@ -33,7 +33,8 @@ public class SFBool extends ValueType {
             parser.match("FALSE");
             res = false;
         } else {
-            throw new SyntaxError("Expected 'TRUE' or 'FALSE'", parser.tokenizer().lineno());
+            parser.error(new SyntaxError("Expected 'TRUE' or 'FALSE'",
+                                        parser.tokenizer().lineno()));
         }
         
         return new SFBool(res);

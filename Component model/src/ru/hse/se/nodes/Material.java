@@ -7,7 +7,7 @@ import ru.hse.se.types.SFColor;
 public class Material extends Node implements Serializable {
     
     public Material() {
-        diffuseColor = new SFColor(0, 0, 0);
+        diffuseColor = new SFColor(0.8, 0.8, 0.8);
     }
     
     public void setDiffuseColor(SFColor c) {

@@ -84,12 +84,14 @@ public class ParserTest extends TestCase {
                     // Node type => process recursively
                     if (Node.class.isAssignableFrom(m.getReturnType())) {
                         
-                        for (int i = 0; i < 2*(nodes.size()) - 1; i++) {
-                            System.out.print("   ");
-                        }
-                        System.out.println(field + " : ");
                         Node child = (Node)m.invoke(n);
-                        introspect(child);
+                        if (child != null) {
+                            for (int i = 0; i < 2*(nodes.size()) - 1; i++) {
+                                System.out.print("   ");
+                            }
+                            System.out.println(field + " : ");
+                            introspect(child);
+                        }
                     }
                     
                     // Value type => print value

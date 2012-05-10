@@ -5,8 +5,8 @@ import java.io.Serializable;
 public class Shape extends Node implements Serializable {
     
     public Shape() {
-        appearance = new Appearance();
-        geometry = new Geometry();
+        appearance = null;
+        geometry = null;
     }
     
     public void setAppearance(Appearance a) {
