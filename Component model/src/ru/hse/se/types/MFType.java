@@ -17,15 +17,15 @@ public abstract class MFType<T> extends ValueType {
         return (ArrayList<T>)(this.value.clone());
     }
     
-    protected void add(T t) {
+    public void add(T t) {
         this.value.add(t);
     }
     
-    protected void remove(T t) {
+    public void remove(T t) {
         this.value.remove(t);
     }
     
-    protected void remove(int i) {
+    public void remove(int i) {
         this.value.remove(i);
     }
     

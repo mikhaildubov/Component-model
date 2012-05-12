@@ -1,6 +1,7 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
+import ru.hse.se.types.MFNode;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -157,42 +158,66 @@ public class X3DParser extends Parser {
         
                             System.out.println("Opening: " + name);
                             
-        if (name.equals("X3D") || name.equals("Scene")) {
+        if (name.equals("X3D") || name.equals("Scene") ||
+              name.equals("fieldValue")) {
             
             // X3D and Scene are simply
-            // root nodes with no functionality
+            // root nodes with no functionality;
+            
+            // fieldValue is used to read fields,
+            // including nested MFNode values.
+            
             return;
         }
 
-        // Nested nodes; not value types
+        // Nested nodes (SFNode/MFNode); not value types
 
         try {
-
+            
             // Uses REFLECTION
             Node currentNode = createInstance(name);
             
-            if (! currentNodes.isEmpty()) {
-                
-                // Child node is some field of the parent node.
-                // To determine which field is to be set,
-                // we use the containterField property.
-                
-                Node parentNode = currentNodes.peek();
-                String field = currentNode.containerField();
-                
-                Class<?> currentFieldType = parentNode.getClass().
-                        getDeclaredMethod("get" +
-                        Character.toUpperCase(field.charAt(0)) +
-                        field.substring(1)).getReturnType();
-                
-                /****** Invoking setXxx(value) ******/
-                parentNode.getClass().getDeclaredMethod("set" +
-                    Character.toUpperCase(field.charAt(0)) + field.substring(1),
-                    new Class[] {currentFieldType}).
-                    invoke(currentNodes.peek(), currentNode);
-                
+            // If the second top tag is <fieldValue>,
+            // then we have one of the nodes in MFNode value
+            boolean isMFNode = false;
+            if (currentTags.size() > 1) {
+                String temp = currentTags.pop();
+                if (currentTags.peek().equals("fieldValue")) {
+                    isMFNode = true;
+                }
+                currentTags.push(temp);
             }
-            
+
+                           
+            // MFNode
+            if (isMFNode) {
+                fieldValueMFNodes.peek().add(currentNode);
+            }
+            // SFNode
+            else {
+                if (! currentNodes.isEmpty()) {
+                    
+                    // Child node is some field of the parent node.
+                    // To determine which field is to be set,
+                    // we use the containterField property.
+                    
+                    Node parentNode = currentNodes.peek();
+                    
+                    String field = currentNode.containerField();
+                    
+                    Class<?> currentFieldType = parentNode.getClass().
+                            getDeclaredMethod("get" +
+                            Character.toUpperCase(field.charAt(0)) +
+                            field.substring(1)).getReturnType();
+                    
+                    /****** Invoking setXxx(value) ******/
+                    parentNode.getClass().getDeclaredMethod("set" +
+                        Character.toUpperCase(field.charAt(0)) + field.substring(1),
+                        new Class[] {currentFieldType}).
+                        invoke(currentNodes.peek(), currentNode);
+                }
+            }
+        
             currentNodes.push(currentNode);
             
         } catch (Exception e) {
@@ -213,6 +238,29 @@ public class X3DParser extends Parser {
             
             // X3D and Scene are simply
             // root nodes with no functionality
+            return;
+        }
+        
+        if (name.equals("fieldValue")) {
+            
+            // Pop the MFNode value from stack,
+            // if there is one on the top
+            Class<?> fieldType = null;
+
+            try {
+                fieldType = currentNodes.peek().getClass().
+                    getDeclaredMethod("get" +
+                    Character.toUpperCase(fieldValueNameAttributes.peek().
+                        charAt(0)) + fieldValueNameAttributes.peek().
+                        substring(1)).getReturnType();
+            } catch (Exception e) { }
+            if (MFNode.class.isAssignableFrom(fieldType)) {
+                fieldValueMFNodes.pop();
+            }
+
+            // Pop the last field name from the stack
+            fieldValueNameAttributes.pop();
+            
             return;
         }
         
@@ -294,31 +342,50 @@ public class X3DParser extends Parser {
             
             nextToken();
         }
+        // Reading a field name through a special tag
+        // it may be given for an MFNode.
+        else if (name.equals("name") && currentTags.peek().equals("fieldValue")) {
+            
+            fieldValueNameAttributes.push(lookahead);
+            Class<?> fieldType = null;
+            
+            try {
+                fieldType = currentNodes.peek().getClass().
+                    getDeclaredMethod("get" +
+                    Character.toUpperCase(lookahead.charAt(0)) +
+                    lookahead.substring(1)).getReturnType();
+            } catch (Exception e) {
+                error(new SyntaxError("Field " + lookahead +
+                        " is not declared.", tokenizer.lineno()));
+            }
+            if (MFNode.class.isAssignableFrom(fieldType)) {
+                try {
+                    MFNode value = (MFNode)(fieldType.newInstance());
+                    fieldValueMFNodes.push(value);                    
+
+                    /****** Invoking setXxx(value) ******/
+                    currentNodes.peek().getClass().getDeclaredMethod("set" +
+                        Character.toUpperCase(lookahead.charAt(0)) +
+                        lookahead.substring(1),
+                        new Class[] {fieldType}).
+                        invoke(currentNodes.peek(), value);
+                } catch (Exception e) {
+                    error(new Error("Could not set the value of" +
+                                            " field " + lookahead));
+                }
+            }
+            
+            nextToken();
+        }
+        // Reading a field value through a special tag
+        else if (name.equals("value") && currentTags.peek().equals("fieldValue")) {
+            String fieldName = fieldValueNameAttributes.peek();
+            matchFieldValueAndSetField(fieldName);
+        }
         // Fields (value types, NOT nested nodes)
         else {
             
-            Node currentNode = currentNodes.peek();
-            Class<?> currentFieldType;
-            
-            try {
-                /****** Getting the field type ******/
-                currentFieldType = currentNode.getClass().
-                        getDeclaredMethod("get" +
-                    Character.toUpperCase(name.charAt(0)) +
-                    name.substring(1)).getReturnType();
-
-                Object attrValue = parseValueType(currentFieldType);
-                
-                /****** Invoking setXxx(value) ******/
-                currentNode.getClass().getDeclaredMethod("set" +
-                    Character.toUpperCase(name.charAt(0)) + name.substring(1),
-                    new Class[] {currentFieldType}).
-                    invoke(currentNode, attrValue);
-    
-            } catch (Exception e) {
-                System.out.print(e.getMessage());
-                error(new Error("Could not set the value of field " + name));
-            }
+            matchFieldValueAndSetField(name);
         }
 
         match("'");
@@ -337,6 +404,42 @@ public class X3DParser extends Parser {
                                                       tokenizer.lineno()));
     }
     
+    
+
+
+    /*************************************************************
+     *            Building up the JavaBeans components.          *
+     *************************************************************/
+    
+    /**
+     * Gets the value of the given field and stores it
+     * in the appropriate Bean.
+     * 
+     * @param name field name
+     */
+    private void matchFieldValueAndSetField(String name) {
+        Node currentNode = currentNodes.peek();
+        Class<?> currentFieldType;
+        
+        try {
+            /****** Getting the field type ******/
+            currentFieldType = currentNode.getClass().
+                    getDeclaredMethod("get" +
+                Character.toUpperCase(name.charAt(0)) +
+                name.substring(1)).getReturnType();
+
+            Object attrValue = parseValueType(currentFieldType);
+            
+            /****** Invoking setXxx(value) ******/
+            currentNode.getClass().getDeclaredMethod("set" +
+                Character.toUpperCase(name.charAt(0)) + name.substring(1),
+                new Class[] {currentFieldType}).
+                invoke(currentNode, attrValue);
+
+        } catch (Exception e) {
+            error(new Error("Could not set the value of field " + name));
+        }
+    }
 
     /*************************************************************
      *                     Token operaions.                      *
@@ -398,11 +501,6 @@ public class X3DParser extends Parser {
         
         return true;
     }
-
-    
-    /*************************************************************
-     *                   Token operations.                       *
-     *************************************************************/
     
     /**
      * Reads the next token from the input.
@@ -451,6 +549,8 @@ public class X3DParser extends Parser {
         currentNodes = new Stack<Node>();
         currentTags = new Stack<String>();
         readingTag = false;
+        fieldValueNameAttributes = new Stack<String>();
+        fieldValueMFNodes = new Stack<MFNode>();
     }
     
     /* 
@@ -477,4 +577,7 @@ public class X3DParser extends Parser {
     private Stack<String> currentTags;
     /* Node stack */
     private Stack<Node> currentNodes;
+    /* For nested MFNodes */
+    private Stack<String> fieldValueNameAttributes;
+    private Stack<MFNode> fieldValueMFNodes;
 }

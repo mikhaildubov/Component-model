@@ -14,7 +14,9 @@
 		<Appearance DEF='app_1'>
 			<Material USE='mat' />
 		</Appearance>
-		<Text string='"VRML" "XML"' length='3.5, 3.0' />
+		<Text string='"VRML" "XML"'>
+			<fieldValue name='length' value='3.5, 3.0' />
+		</Text>
 	</Shape>
 	
 	<Shape USE='shape1' />
