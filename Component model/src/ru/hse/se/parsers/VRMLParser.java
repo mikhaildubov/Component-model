@@ -88,7 +88,7 @@ public class VRMLParser extends Parser {
      *       routeStatement             *
      ************************************/
     private boolean parseStatement() {
-        
+
         // ! NB: The order is essential, because of the FIRST elements
         
         return (lookahead != null) &&
@@ -195,10 +195,10 @@ public class VRMLParser extends Parser {
                           
                (tryMatchFieldId() &&
                        
-                    (tryMatch("IS") && matchId()
+                    ((tryMatch("IS") && matchId()
                             /* && ??? -> 3 productions!!! */) ||
                        
-                    (matchFieldValueAndSetField()));
+                    (matchFieldValueAndSetField())));
     }
     
     
@@ -349,7 +349,7 @@ public class VRMLParser extends Parser {
         if (currentNodes.isEmpty()) {
             return false;
         }
-        
+
         boolean isFieldName = false;
         
         Method[] methods = currentNodes.peek().getClass().getDeclaredMethods();
@@ -452,6 +452,9 @@ public class VRMLParser extends Parser {
      */
     private boolean panicModeRecovery() {
         
+        // The error is an invalid node name
+        // or its absence.
+        
         // Recovery possibility - if the current
         // or the next tokens is an opening parenthese.
         while (! lookahead("{") && lookahead != null) {
@@ -493,8 +496,8 @@ public class VRMLParser extends Parser {
         
         try {
 
-            Node node = (Node)(Class.forName(nodesPackageName +
-                                 "."+ currentType).newInstance());
+            // Uses REFLECTION
+            Node node = createInstance(currentType);
             
             // If there was the "DEF" keyword
             if (currentId != null) {
@@ -530,7 +533,7 @@ public class VRMLParser extends Parser {
         Node node = defNodesTable.get(currentId);
         
         // can be null
-        currentNodes.push(node);  
+        currentNodes.push(node);
         
         if (node == null) {
             
@@ -599,9 +602,9 @@ public class VRMLParser extends Parser {
                 
                 // involves currentNodes.push(...)
                 parseNodeStatement(); 
-                
+
                 // after parseNodeStatement the node is on the top
-                value = currentNodes.pop();
+                value = currentNodes.pop(); 
             }
         }
         

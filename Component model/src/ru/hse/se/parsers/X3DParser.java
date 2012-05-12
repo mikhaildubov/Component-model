@@ -168,8 +168,8 @@ public class X3DParser extends Parser {
 
         try {
 
-            Node currentNode = (Node)(Class.forName(nodesPackageName +
-                                "."+ name).newInstance());
+            // Uses REFLECTION
+            Node currentNode = createInstance(name);
             
             if (! currentNodes.isEmpty()) {
                 

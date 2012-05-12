@@ -102,6 +102,17 @@ public class ParserTest extends TestCase {
                             System.out.print("   ");
                         }
                         System.out.println(field + " : " + value);
+                    } 
+                    
+                    // Java primitive types
+                    // (it is the case when there are external nodes)
+                    else {
+
+                        Object o = m.invoke(n);
+                        for (int i = 0; i < 2*(nodes.size()) - 1; i++) {
+                            System.out.print("   ");
+                        }
+                        System.out.println(field + " : " + o);
                     }
                 }
             }

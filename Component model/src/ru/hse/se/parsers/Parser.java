@@ -4,9 +4,11 @@ import ru.hse.se.nodes.Node;
 import ru.hse.se.types.MFBool;
 import ru.hse.se.types.MFFloat;
 import ru.hse.se.types.MFInt32;
+import ru.hse.se.types.MFString;
 import ru.hse.se.types.SFBool;
 import ru.hse.se.types.SFFloat;
 import ru.hse.se.types.SFInt32;
+import ru.hse.se.types.SFString;
 import ru.hse.se.types.ValueType;
 
 import java.io.*;
@@ -165,6 +167,16 @@ public abstract class Parser {
                 ((float[])value)[i] = (float)(val.get(i).getValue());
             }
             
+        } else if (currentFieldType == String.class) { 
+            value = (String)(SFString.parse(this).getValue());
+            
+        } else if (currentFieldType == String[].class) {
+            ArrayList<SFString> val = MFString.parse(this).getValue();
+            value = new String[val.size()];
+            for (int i = 0; i < val.size(); i++) {
+                ((String[])value)[i] = (String)(val.get(i).getValue());
+            }
+            
         }
         
         //else if (currentFieldType == ArrayList.class) {
@@ -173,7 +185,7 @@ public abstract class Parser {
         
         /****** c) Error otherwise ******/
         else {
-            throw new Error("Value of unknown type");
+           error(new Error("Value of unknown type"));
         }
         
         return value;
@@ -269,25 +281,53 @@ public abstract class Parser {
         return parsingErrors;
     }
     
+    /**
+     * Determines whether the node with a given
+     * name exists in one of registered node packages.
+     * 
+     * @param str Node name (simple name)
+     * @return true if the node exists, false otherwise
+     */
     protected boolean isNodeName(String str) {
-        for (String s : nodeNames) {
-            if (s.equals(str)) {
+        for (String pkg : nodePackages) {
+            try {
+                Class.forName(pkg + "." + str);
+                // here => Class found
                 return true;
-            }
+            } catch (ClassNotFoundException e) {}
         }
         return false;
     }
+
     
     /**
-     * Registers new nodes that can appear in
-     * the input file. Registering is needed
-     * in order for the parser to be able
-     * to check for error during the parsing.
+     * Creates instance of a node for its name.
      * 
-     * @param name array of node class names
+     * @param str Node name (simple name)
+     * @return the node object (if this node type exists)
+     * @throws Exception if there are instantiation errors
      */
-    public void registerNodes(ArrayList<String> names) {
-        nodeNames.addAll(names);
+    protected Node createInstance(String str) throws Exception {
+        for (String pkg : nodePackages) {
+            try {
+                Node res = (Node)(Class.forName(pkg + "." + str).newInstance());
+                // here => Class found
+                return res;
+            } catch (ClassNotFoundException e) {}           
+        }
+        throw new Exception();
+    }
+    
+    /**
+     * Registers new package that contains nodes
+     * that can appear in the input file.
+     * Registering is needed in order for the parser
+     * to be able to check for errors during the parsing.
+     * 
+     * @param packageName packageName
+     */
+    public void registerNodePackage(String packageName) {
+        nodePackages.add(packageName);
     }
 
     /** Tokenizer */
@@ -300,20 +340,11 @@ public abstract class Parser {
     protected ArrayList<Error> parsingErrors;
     
     /** The nodes package name (needed for reflection) */
-    protected static final String nodesPackageName = "ru.hse.se.nodes";
+    protected static final ArrayList<String> nodePackages;
     
-    /** The list of possible node names */
-    protected static ArrayList<String> nodeNames;
-    
-    // Registering standard node names
-    {
-        nodeNames = new ArrayList<String>();
-        nodeNames.add("Appearance");
-        nodeNames.add("Box");
-        nodeNames.add("Group");
-        nodeNames.add("Material");
-        nodeNames.add("Shape");
-        nodeNames.add("Sphere");
-        nodeNames.add("Text");
+    static {
+        nodePackages = new ArrayList<String>();
+        nodePackages.add("ru.hse.se.nodes");
     }
+    
 }
