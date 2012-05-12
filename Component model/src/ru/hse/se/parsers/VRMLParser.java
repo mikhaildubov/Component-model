@@ -158,9 +158,8 @@ public class VRMLParser extends Parser {
                     match("{") && parseNodeBody() && match("}")) ||
                     
                 // Handling a typical syntax error case, trying to recover
-               (! lookahead("}") && error(new SyntaxError("'" + lookahead +
-                       "' is not a valid node name", tokenizer.lineno())) &&
-                       panicModeRecovery() && (currentNodes.push(null) == null));
+               (! lookahead("}") && panicModeRecovery() &&
+                   (currentNodes.push(null) == null));
     }
     
     /************************************
@@ -454,8 +453,10 @@ public class VRMLParser extends Parser {
     private boolean panicModeRecovery() {
         
         // Recovery possibility - if the current
-        // or the next token is an opening parenthese.
-        if (! lookahead("{")) {
+        // or the next tokens is an opening parenthese.
+        while (! lookahead("{") && lookahead != null) {
+            error(new SyntaxError("'" + lookahead +
+                    "' is not a valid node name", tokenizer.lineno()));
             nextToken();
         }
         
