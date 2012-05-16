@@ -13,11 +13,17 @@ public class CodeGeneratorTest extends TestCase {
         
         CodeGenerator.X3DtoVRML(new FileReader("test\\Example.x3d"),
                                 new PrintStream("test\\out.wrl"));
+        
+        CodeGenerator.X3DtoVRML(new FileReader("test\\Example2.x3d"),
+                                new PrintStream("test\\out2.wrl"));
     }
     
     public void testVRMLtoX3D() throws FileNotFoundException {
         
         CodeGenerator.VRMLtoX3D(new FileReader("test\\Example.wrl"),
                                 new PrintStream("test\\out.x3d"));
+        
+        CodeGenerator.VRMLtoX3D(new FileReader("test\\Example2.wrl"),
+                                new PrintStream("test\\out2.x3d"));
     }
 }

@@ -127,7 +127,7 @@ public abstract class Parser {
         
         /****** b) Java primitive types => use VRML wrappers (SFBool, SFFloat, ...) ******/
         // TODO: TEST!
-        else if (currentFieldType == int.class) { 
+        else if (currentFieldType == int.class) {
             value = SFInt32.parse(this).getValue();
               
         } else if (currentFieldType == int[].class) { 

@@ -2,17 +2,17 @@
 
 DEF person1 Person {
     name "Alice Naur"
-	age 30
+    age 30
 }
 
 Person {
     name "Clara Backus"
-	age 9
-	
-	mother USE person1
-	
-	father Person {
-	    name "Bob Backus"
-		age 35
-	}
+    age 9
+    
+    mother USE person1
+    
+    father Person {
+        name "Bob Backus"
+        age 35
+    }
 }

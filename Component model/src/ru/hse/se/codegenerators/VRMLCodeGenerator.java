@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Stack;
 
 import ru.hse.se.nodes.Node;
+import ru.hse.se.types.MFNode;
 import ru.hse.se.types.ValueType;
 
 /**
@@ -79,11 +80,46 @@ public class VRMLCodeGenerator extends CodeGenerator {
                             process(child);
                         }
                     }
-                    
+                    // Multiple node type => process them all
+                    else if (MFNode.class.isAssignableFrom(m.getReturnType())) {
+                        
+                        MFNode value = (MFNode)m.invoke(n);
+                        for (int i = 0; i < nodes.size(); i++) {
+                            output.print("  ");
+                        }
+                        output.println(field + " [");
+                        
+                        nodes.push(null); // Fake node; just for code indent
+                        
+                        for (Node child : value.getValue()) {
+
+                            for (int i = 0; i < nodes.size(); i++) {
+                                output.print("  ");
+                            }
+                            process(child);
+                        }
+                        
+                        nodes.pop();
+                        
+                        for (int i = 0; i < nodes.size(); i++) {
+                            output.print("  ");
+                        }
+                        output.println("]");
+                    }                    
                     // Value type => print value
                     else if (ValueType.class.isAssignableFrom(m.getReturnType())) {
                         
                         ValueType value = (ValueType)m.invoke(n);
+                        for (int i = 0; i < nodes.size(); i++) {
+                            output.print("  ");
+                        }
+                        output.println(field + " " + value);
+                    }
+                    // Other => Java primitive type
+                    else {
+                        
+                        // TODO: check for accepted types
+                        Object value = m.invoke(n);
                         for (int i = 0; i < nodes.size(); i++) {
                             output.print("  ");
                         }

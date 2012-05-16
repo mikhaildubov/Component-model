@@ -1,8 +1,8 @@
-<X3D>	
-	<Group>
-		<fieldValue name='children'>
-			<Box />
-			<Sphere radius='1.3'/>
-		</fieldValue>
-	</Group>
+<X3D>    
+    <Group>
+        <fieldValue name='children'>
+            <Box />
+            <Sphere radius='1.3'/>
+        </fieldValue>
+    </Group>
 </X3D>

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Stack;
 import ru.hse.se.nodes.Node;
+import ru.hse.se.types.MFNode;
 import ru.hse.se.types.MFValueType;
 import ru.hse.se.types.ValueType;
 
@@ -83,13 +84,18 @@ public class X3DCodeGenerator extends CodeGenerator {
                         
                         ValueType value = (ValueType)m.invoke(n);
                         
-                        // Different patterns of printing values (!)
-                        if (value instanceof MFValueType) {
-                            output.print(" " + field + "='" + 
-                                    value.toString().substring(2,
-                                    value.toString().length()-2) + "'");
-                        } else {
-                            output.print(" " + field + "='" + value + "'");
+                        // MFNodes - processed later
+                        if (! (value instanceof MFNode)) {
+                            
+                            // Different patterns of printing values (!)
+                            if (value instanceof MFValueType) {
+                                // Erasing '[' and ']'
+                                output.print(" " + field + "='" + 
+                                        value.toString().substring(2,
+                                        value.toString().length()-2) + "'");
+                            } else {
+                                output.print(" " + field + "='" + value + "'");
+                            }
                         }
                     }
                 }
@@ -108,6 +114,33 @@ public class X3DCodeGenerator extends CodeGenerator {
                         if (child != null) {
                             process(child);
                         }
+                    }
+                    // MFNodes
+                    else if (MFNode.class.isAssignableFrom(m.getReturnType())) {
+                        
+                        String field = Character.toLowerCase(m.getName().charAt(3)) + 
+                                        m.getName().substring(4);                        
+                        MFNode value = (MFNode)m.invoke(n);
+                        
+                        nodes.push(null); // Fake node; just for code indent
+                        
+                        for (int i = 0; i < nodes.size()-1; i++) {
+                            output.print("  ");
+                        }
+                        
+                        output.println("<fieldValue name='" + field + "'>");
+                        
+                        for (Node child : value.getValue()) {
+                            process(child);
+                        }
+
+                        for (int i = 0; i < nodes.size()-1; i++) {
+                            output.print("  ");
+                        }
+                        
+                        output.println("</fieldValue>");
+                        
+                        nodes.pop();
                     }
                 }
             }
