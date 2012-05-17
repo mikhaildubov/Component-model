@@ -33,7 +33,7 @@ public class SFBool extends ValueType {
             parser.match("FALSE");
             res = false;
         } else {
-            parser.error(new SyntaxError("Expected 'TRUE' or 'FALSE'",
+            parser.registerError(new SyntaxError("Expected 'TRUE' or 'FALSE'",
                                         parser.tokenizer().lineno()));
         }
         

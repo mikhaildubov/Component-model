@@ -2,6 +2,7 @@ package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.*;
 import ru.hse.se.parsers.errors.*;
+import ru.hse.se.types.MFNode;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -59,7 +60,7 @@ public class VRMLParser extends Parser {
         
         // Some token left unparsed
         if (lookahead != null) {
-            error (new SyntaxError("Unrecognized lexeme sequence starting at '"
+            registerError (new SyntaxError("Unrecognized lexeme sequence starting at '"
                                         + lookahead + "'", tokenizer.lineno()));  
         }
     }
@@ -159,8 +160,10 @@ public class VRMLParser extends Parser {
                     match("{") && parseNodeBody() && match("}")) ||
                     
                 // Handling a typical syntax error case, trying to recover
-               (! lookahead("}") && panicModeRecovery() &&
-                   (currentNodes.push(null) == null)); // just to push smth
+                // '}' is the only correct lexeme at this point
+               (! lookahead("}") &&
+                   registerError(possibleError) && panicModeRecovery() &&
+                   (currentNodes.push(null) == null)); // pushing fake node
     }
     
     /************************************
@@ -199,7 +202,12 @@ public class VRMLParser extends Parser {
                     ((tryMatch("IS") && matchId()
                             /* && ??? -> 3 productions!!! */) ||
                        
-                    (matchFieldValueAndSetField())));
+                    (matchFieldValueAndSetField()))) ||
+                    
+               // Handling a typical syntax error case, trying to recover
+               // '}' is the only correct lexeme at this point
+               (! lookahead("}") &&
+                   registerError(possibleError) && panicModeRecovery());
     }
     
     
@@ -288,7 +296,7 @@ public class VRMLParser extends Parser {
      */
     @Override
     public String lookahead() {
-        return (lookahead == null ? String.valueOf(numahead) : lookahead);
+        return (lookahead == null ? "" : lookahead);
     }
     
     /**
@@ -334,7 +342,7 @@ public class VRMLParser extends Parser {
             
         } else {
             
-            error(new SyntaxError("'" + lookahead + "' is not a valid id",
+            registerError(new SyntaxError("'" + lookahead + "' is not a valid id",
                                                     tokenizer.lineno()));
         }
         
@@ -382,7 +390,12 @@ public class VRMLParser extends Parser {
             return true;
             
         } else {
+
+            // There is no field with the given name
             
+            possibleError = new LexicalError("'" + lookahead +
+                                "' is not a valid field name",
+                                tokenizer.lineno(), lookahead);
             return false;
         }
     }
@@ -394,14 +407,40 @@ public class VRMLParser extends Parser {
      */
     private boolean tryMatchTypeId() {
         
-        if(isNodeName(lookahead)) {
+        Class<?> nodeType = classForNodeName(lookahead);
+        if (nodeType != null) {
             
             currentType = lookahead;
             nextToken();
             
+            // There is a node with the given name,
+            // but it should be checked for type matching
+            try {
+                Class<?> fieldType = currentNodes.peek().getClass().
+                        getDeclaredMethod("get" + Character.toUpperCase
+                        (currentField.peek().charAt(0)) +
+                         currentField.peek().substring(1)).getReturnType();
+
+                if (! fieldType.isAssignableFrom(nodeType) &&
+                    ! fieldType.isAssignableFrom(MFNode.class)) {
+                    possibleError = new TypeMismatchError
+                            (nodeType, fieldType, tokenizer.lineno());
+                    currentId = null; // to preserve invalid DEF assignments
+                    
+                    return false;
+                }
+            } catch (Exception e) { }
+            
             return true;
             
         } else {
+            
+            // There is no node with the given name
+            
+            possibleError = new LexicalError("'" + lookahead +
+                                "' is not a valid node name",
+                                tokenizer.lineno(), lookahead);
+            currentId = null; // to preserve invalid DEF assignments
             
             return false;
         }
@@ -462,11 +501,6 @@ public class VRMLParser extends Parser {
         // Recovery possibility - if the current
         // or the next tokens is an opening parenthese.
         while (! lookahead("{") && lookahead != null) {
-            if (!isNodeName(lookahead)) {
-                error(new LexicalError("'" + lookahead +
-                        "' is not a valid node name",
-                        tokenizer.lineno(), lookahead));
-            }
             nextToken();
         }
         
@@ -481,7 +515,7 @@ public class VRMLParser extends Parser {
                     parentheses--;
                 }
                 if (parentheses == 0) {
-                    nextToken(); 
+                    nextToken();
                     return true;
                 }
             }
@@ -544,14 +578,14 @@ public class VRMLParser extends Parser {
         
         if (node == null) {
             
-            error(new SyntaxError("Node named '" + currentId +
-                    "' is not declared.", tokenizer.lineno()));
+            registerError(new LexicalError("Node named '" + currentId +
+                    "' is not declared.", tokenizer.lineno(), currentId));
         } else {
 
             System.out.println("Instantiated existing Node" +
               (currentId == null ? "" : (" '"+currentId)+"'"));             
         }       
-        
+
         currentId = null;
 
         return true;
@@ -671,7 +705,6 @@ public class VRMLParser extends Parser {
     
     /* current Token */
     protected String lookahead;
-    private double numahead;
     
     /* current Node id */
     private String currentId;

@@ -14,4 +14,9 @@ public class VRMLParserTest extends ParserTest {
         
         parserTest(new VRMLParser(), "test\\Example2.wrl");
     }
+    
+    public void testParseErrors() throws FileNotFoundException {
+        
+        parserTest(new VRMLParser(), "test\\Example_errors.wrl");
+    }
 }

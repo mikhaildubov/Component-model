@@ -77,14 +77,14 @@ public class X3DParser extends Parser {
                 if (lookahead("/")) {
                     match("/");
                     if (currentTags.isEmpty()) {
-                        error(new SyntaxError ("Closing tag + '" + lookahead
+                        registerError(new SyntaxError ("Closing tag + '" + lookahead
                                 + "' does not match any opening tag.",
                                 tokenizer.lineno()));
                     } else {
                         String openingTag = currentTags.pop();
                         
                         if (! lookahead(openingTag)) {
-                            error(new SyntaxError ("Closing tag + '" + lookahead
+                            registerError(new SyntaxError ("Closing tag + '" + lookahead
                                               + "' does not match the opening tag + '"
                                               + openingTag + "'.", tokenizer.lineno()));
                         } else {
@@ -222,7 +222,7 @@ public class X3DParser extends Parser {
             currentNodes.push(currentNode);
             
         } catch (Exception e) {
-            error(new Error("Could not instantiate node " + name));
+            registerError(new Error("Could not instantiate node " + name));
         }
     }
     
@@ -329,7 +329,7 @@ public class X3DParser extends Parser {
                             invoke(currentNodes.peek(), node);
                     } catch (Exception e) {
                         
-                        error(new Error("Could not use node " + lookahead));
+                        registerError(new Error("Could not use node " + lookahead));
                     }
                 }
                 
@@ -337,7 +337,7 @@ public class X3DParser extends Parser {
                 
             } else {
 
-                error(new SyntaxError("Node named '" + lookahead +
+                registerError(new SyntaxError("Node named '" + lookahead +
                         "' is not declared.", tokenizer.lineno()));
             }
             
@@ -356,7 +356,7 @@ public class X3DParser extends Parser {
                     Character.toUpperCase(lookahead.charAt(0)) +
                     lookahead.substring(1)).getReturnType();
             } catch (Exception e) {
-                error(new SyntaxError("Field " + lookahead +
+                registerError(new SyntaxError("Field " + lookahead +
                         " is not declared.", tokenizer.lineno()));
             }
             if (MFNode.class.isAssignableFrom(fieldType)) {
@@ -371,7 +371,7 @@ public class X3DParser extends Parser {
                         new Class[] {fieldType}).
                         invoke(currentNodes.peek(), value);
                 } catch (Exception e) {
-                    error(new Error("Could not set the value of" +
+                    registerError(new Error("Could not set the value of" +
                                             " field " + lookahead));
                 }
             }
@@ -401,7 +401,7 @@ public class X3DParser extends Parser {
         
                             System.out.println("Text node: " + value);
         
-        error(new SyntaxError("No text nodes allowed in X3D format",
+        registerError(new SyntaxError("No text nodes allowed in X3D format",
                                                       tokenizer.lineno()));
     }
     
@@ -438,7 +438,7 @@ public class X3DParser extends Parser {
                 invoke(currentNode, attrValue);
 
         } catch (Exception e) {
-            error(new Error("Could not set the value of field " + name));
+            registerError(new Error("Could not set the value of field " + name));
         }
     }
 
@@ -496,7 +496,7 @@ public class X3DParser extends Parser {
             
         } else {
             
-            error(new SyntaxError("'" + lookahead + "' is not a valid id",
+            registerError(new SyntaxError("'" + lookahead + "' is not a valid id",
                                                             tokenizer.lineno()));
         }
         

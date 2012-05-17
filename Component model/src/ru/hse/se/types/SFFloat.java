@@ -31,7 +31,7 @@ public class SFFloat extends ValueType {
             parser.nextToken();
             
         } catch (Exception e) {
-            parser.error(new SyntaxError("Expected a double-precision float number" +
+            parser.registerError(new SyntaxError("Expected a double-precision float number" +
                                     " in ANSI C format, but got '" +
                                     parser.lookahead() + "'", parser.tokenizer().lineno()));
         }

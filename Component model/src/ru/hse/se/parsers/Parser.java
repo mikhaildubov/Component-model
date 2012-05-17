@@ -186,7 +186,7 @@ public abstract class Parser {
         
         /****** c) Error otherwise ******/
         else {
-           error(new Error("Value of unknown type"));
+           registerError(new Error("Value of unknown type"));
         }
         
         return value;
@@ -236,7 +236,7 @@ public abstract class Parser {
             
         } else {
             
-            error(new SyntaxError("Expected '" + token + "', but got '" + 
+            registerError(new SyntaxError("Expected '" + token + "', but got '" + 
                                     lookahead() + "'",
                                     tokenizer.lineno()));
         }
@@ -257,6 +257,8 @@ public abstract class Parser {
             match(token);
             return true;
         } else {
+            possibleError = new SyntaxError("Expected '" + token +
+                    "', but got '" + lookahead() + "'", tokenizer.lineno());
             return false;
         }
     }
@@ -266,9 +268,11 @@ public abstract class Parser {
      * 
      * @param e the error object
      */
-    public boolean error(Error e) {
+    public boolean registerError(Error e) {
 
-        parsingErrors.add(e);
+        if (e != null) {
+            parsingErrors.add(e);
+        }
         
         return true;
     }
@@ -284,20 +288,24 @@ public abstract class Parser {
     
     /**
      * Determines whether the node with a given
-     * name exists in one of registered node packages.
+     * name exists in one of registered node packages,
+     * and returns the appropriate Class<?> object
+     * if there is such a node type.
      * 
      * @param str Node name (simple name)
-     * @return true if the node exists, false otherwise
+     * @return the appropriate Class if the node exists,
+     *         null otherwise
      */
-    protected boolean isNodeName(String str) {
+    protected Class<?> classForNodeName(String str) {
+        Class<?> res = null;
         for (String pkg : nodePackages) {
             try {
-                Class.forName(pkg + "." + str);
+                res = Class.forName(pkg + "." + str);
                 // here => Class found
-                return true;
+                break;
             } catch (ClassNotFoundException e) {}
         }
-        return false;
+        return res;
     }
 
     
@@ -339,6 +347,13 @@ public abstract class Parser {
     
     /** The errors that occured during parsing */
     protected ArrayList<Error> parsingErrors;
+    
+    /**
+     * The error that occured during the last call
+     * of some tryXxx method; such an error is not
+     * registered until registerPossibleError() is called.
+     */
+    protected Error possibleError = null;
     
     /** The nodes package name (needed for reflection) */
     protected static final ArrayList<String> nodePackages;

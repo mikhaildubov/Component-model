@@ -8,7 +8,7 @@ public class TypeMismatchError extends Error {
         super("Line " + line + ": " + 
                 "type '" + given.getSimpleName() +
                 "' does not match type '" +
-                required.getSimpleName());
+                required.getSimpleName() + "'");
         this.line = line;
     }
     
