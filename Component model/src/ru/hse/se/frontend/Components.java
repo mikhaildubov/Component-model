@@ -1,7 +1,7 @@
 package ru.hse.se.frontend;
 
 import ru.hse.se.nodes.Node;
-import ru.hse.se.parsers.*;
+import ru.hse.se.parsers.errors.*;
 import ru.hse.se.types.ValueType;
 
 import java.io.*;
