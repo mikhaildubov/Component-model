@@ -1,6 +1,7 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.*;
+import ru.hse.se.parsers.errors.*;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -159,7 +160,7 @@ public class VRMLParser extends Parser {
                     
                 // Handling a typical syntax error case, trying to recover
                (! lookahead("}") && panicModeRecovery() &&
-                   (currentNodes.push(null) == null));
+                   (currentNodes.push(null) == null)); // just to push smth
     }
     
     /************************************
@@ -389,6 +390,7 @@ public class VRMLParser extends Parser {
     /**
      * Reads the next token that represents a type
      * (which is also an Id).
+     * @return true, if lookahead is a valid node name, false otherwise
      */
     private boolean tryMatchTypeId() {
         
@@ -407,7 +409,7 @@ public class VRMLParser extends Parser {
     
     /**
      * Reads the next token from the input.
-     * @returns false when the next token is unavailable, true otherwise
+     * @return false when the next token is unavailable, true otherwise
      */
     @Override
     public boolean nextToken() {
@@ -460,8 +462,11 @@ public class VRMLParser extends Parser {
         // Recovery possibility - if the current
         // or the next tokens is an opening parenthese.
         while (! lookahead("{") && lookahead != null) {
-            error(new SyntaxError("'" + lookahead +
-                    "' is not a valid node name", tokenizer.lineno()));
+            if (!isNodeName(lookahead)) {
+                error(new LexicalError("'" + lookahead +
+                        "' is not a valid node name",
+                        tokenizer.lineno(), lookahead));
+            }
             nextToken();
         }
         

@@ -2,10 +2,10 @@ package ru.hse.se.types;
 
 import java.util.ArrayList;
 
-import ru.hse.se.parsers.SyntaxError;
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.VRMLParser;
 import ru.hse.se.parsers.X3DParser;
+import ru.hse.se.parsers.errors.SyntaxError;
 
 @SuppressWarnings("unchecked")
 public abstract class MFValueType<T extends ValueType> extends MFType<T> {

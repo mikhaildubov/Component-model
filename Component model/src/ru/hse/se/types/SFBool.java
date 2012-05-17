@@ -1,7 +1,7 @@
 package ru.hse.se.types;
 
-import ru.hse.se.parsers.SyntaxError;
 import ru.hse.se.parsers.Parser;
+import ru.hse.se.parsers.errors.SyntaxError;
 
 public class SFBool extends ValueType {
     

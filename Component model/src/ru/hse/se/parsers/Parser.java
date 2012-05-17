@@ -1,6 +1,7 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
+import ru.hse.se.parsers.errors.SyntaxError;
 import ru.hse.se.types.MFBool;
 import ru.hse.se.types.MFFloat;
 import ru.hse.se.types.MFInt32;

@@ -1,6 +1,7 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
+import ru.hse.se.parsers.errors.SyntaxError;
 import ru.hse.se.types.MFNode;
 
 import java.io.IOException;

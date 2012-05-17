@@ -2,7 +2,7 @@ package ru.hse.se.parsers.test;
 
 import ru.hse.se.nodes.Node;
 import ru.hse.se.parsers.Parser;
-import ru.hse.se.parsers.SyntaxError;
+import ru.hse.se.parsers.errors.*;
 import ru.hse.se.types.ValueType;
 
 import java.io.FileNotFoundException;
@@ -36,6 +36,10 @@ public class ParserTest extends TestCase {
                 for (Error e : parser.getParsingErrors()) {
                     if (e instanceof SyntaxError) {
                         System.out.print("** SYNTAX ERROR **\t");
+                    } else if (e instanceof LexicalError) {
+                        System.out.print("** LEXICAL ERROR **\t");
+                    } else if (e instanceof TypeMismatchError) {
+                        System.out.print("** TYPE MISMATCH **\t");
                     } else {
                         System.out.print("** ERROR **\t");
                     }

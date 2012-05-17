@@ -1,4 +1,4 @@
-package ru.hse.se.parsers;
+package ru.hse.se.parsers.errors;
 
 public class SyntaxError extends Error {
 	private static final long serialVersionUID = 1L;
