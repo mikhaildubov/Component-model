@@ -210,9 +210,8 @@ public class TreeTableExample3 {
 		path = null;
 	    }
 	    if (path == null) {
-		// None available, use a default.
-		//path = "GUI/components.wrl";
-	        path = "C:/Users/MSDubov/HSE/II year/Coursework/Program/Component model/Component model/test/Example.wrl";
+	        // None available, use a default.
+    		path = "C:/Users/MSDubov/HSE/II year/Coursework/Program/Component model/Component model/test/Example.wrl";
 	    }
             new TreeTableExample3(path);
 	}
