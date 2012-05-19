@@ -193,7 +193,6 @@ public class VRMLParser extends Parser {
         
         // Trying to parse routeStatement or protoStatement at first
         // (Since they contain terminals at their FIRST position).
-        System.out.println("___"+lookahead);
         
         return (parseRouteStatement()) ||
         
@@ -436,7 +435,7 @@ public class VRMLParser extends Parser {
      * @return true, if lookahead is a valid node name, false otherwise
      */
     private boolean tryMatchTypeId() {
-        System.out.println("!!!"+lookahead);
+
         Class<?> nodeType = classForNodeName(lookahead);
         if (nodeType != null) {
             
@@ -460,7 +459,6 @@ public class VRMLParser extends Parser {
                     return false;
                 }
             } catch (Exception e) { }
-            System.out.println("???"+lookahead);
             
             return true;
             
@@ -688,7 +686,7 @@ public class VRMLParser extends Parser {
                 value = null;
                 
             } else {
-                System.out.println("---"+lookahead);
+
                 // involves currentNodes.push(...)
                 parseNodeStatement(); 
 
@@ -722,7 +720,7 @@ public class VRMLParser extends Parser {
             return true;
             
         } catch (Exception e) {
-            System.out.println();
+
             return false;
         }
     }
