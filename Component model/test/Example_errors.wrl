@@ -4,29 +4,33 @@ DEF shape1 Shape
 {
   appearance Appearance
   {
-    material DF mat Material                 # DF instead of DEF
+    material DEF mat Material
     {
-      diffuseColor -2e-1 -0.2 +0.71
+      diffuseColor -2e-1 +0.71                 # 2 floats instead of 3
     } # Material
   } # Appearance
-  geomtry Sphere                             # geometry instead of geometry
+  geomeetry Sphere                             # geomeetry <-> geometry
   {
     radius 1.2
   } # Sphere
 } # Shape
 
-Shape                                        # no '{'
-   geometry Bx {}                            # Bx instead of Box
+Shape                                          # no '{'
+   appearance Appearance 
+   {
+	 material Material                         
+	 {diffuesColor 1 1 1}}                     # diffuesColor <-> diffuseColor
+   geometry Bx {}                              # Bx <-> Box
 }
 
 Shape {
-   appearance    DEF app_1 Appearance {
+   appearance    DF app_1 Appearance {         # DF <-> DEF
       material USE mat
    }
-   geometry Material {                       # Type mismatch
+   geometry Material {                         # Type mismatch
         string [ "VRML" "XML" ]
         length  [ 3.5, 3.0 ]
-                                             # no '}'
+                                               # no '}'
 }
 
-USE shap1
+USE shap1                                    # parser thinks that USE is a field

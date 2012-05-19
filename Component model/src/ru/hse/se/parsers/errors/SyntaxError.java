@@ -1,17 +1,11 @@
 package ru.hse.se.parsers.errors;
 
-public class SyntaxError extends Error {
-	private static final long serialVersionUID = 1L;
+public class SyntaxError extends ParsingError {
 
 	public SyntaxError(String error, int line) {
 
-        super("Line " + line + ": " + error);
-	    this.line = line;
+        super(error, line);
 	}
-	
-	public int getLine() {
-	    return line;
-	}
-	
-	private int line;
+    
+    private static final long serialVersionUID = 1L;
 }

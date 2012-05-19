@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Stack;
 
 /**
@@ -192,6 +193,7 @@ public class VRMLParser extends Parser {
         
         // Trying to parse routeStatement or protoStatement at first
         // (Since they contain terminals at their FIRST position).
+        System.out.println("___"+lookahead);
         
         return (parseRouteStatement()) ||
         
@@ -355,6 +357,7 @@ public class VRMLParser extends Parser {
      * @return true, if the current token is a field, false otherwise
      */
     private boolean lookaheadIsFieldName() {
+        
         if (currentNodes.isEmpty()) {
             return false;
         }
@@ -377,6 +380,32 @@ public class VRMLParser extends Parser {
     }
     
     /**
+     * Returns the hash set of the current node fields,
+     * used for lexical error diagnostics.
+     * 
+     * @return HashSet of the current node fields
+     */
+    private HashSet<String> getCurrentNodeFields() {
+        
+        if (currentNodes.isEmpty()) {
+            return null;
+        }
+
+        HashSet<String> res = new HashSet<String>();
+        
+        Method[] methods = currentNodes.peek().getClass().getDeclaredMethods();
+        for (Method m : methods) {
+            if (m.getName().startsWith("get")) {
+                String field = Character.toLowerCase(m.getName().charAt(3)) + 
+                                                     m.getName().substring(4);
+                res.add(field);
+            }
+        }
+        
+        return res;
+    }
+    
+    /**
      * Reads the next token that represents a fieldId
      * (which is also an Id), and pushes it into the stack.
      */
@@ -395,7 +424,8 @@ public class VRMLParser extends Parser {
             
             possibleError = new LexicalError("'" + lookahead +
                                 "' is not a valid field name",
-                                tokenizer.lineno(), lookahead);
+                                tokenizer.lineno(), lookahead,
+                                getCurrentNodeFields());
             return false;
         }
     }
@@ -406,7 +436,7 @@ public class VRMLParser extends Parser {
      * @return true, if lookahead is a valid node name, false otherwise
      */
     private boolean tryMatchTypeId() {
-        
+        System.out.println("!!!"+lookahead);
         Class<?> nodeType = classForNodeName(lookahead);
         if (nodeType != null) {
             
@@ -430,6 +460,7 @@ public class VRMLParser extends Parser {
                     return false;
                 }
             } catch (Exception e) { }
+            System.out.println("???"+lookahead);
             
             return true;
             
@@ -439,7 +470,7 @@ public class VRMLParser extends Parser {
             
             possibleError = new LexicalError("'" + lookahead +
                                 "' is not a valid node name",
-                                tokenizer.lineno(), lookahead);
+                                tokenizer.lineno(), lookahead, null);
             currentId = null; // to preserve invalid DEF assignments
             
             return false;
@@ -500,12 +531,14 @@ public class VRMLParser extends Parser {
         
         // Recovery possibility - if the current
         // or the next tokens is an opening parenthese.
-        while (! lookahead("{") && lookahead != null) {
+        while (! lookahead("{") && // for Nodes
+               ! lookahead("}") && // for ValueTypes
+                lookahead != null) {
             nextToken();
         }
         
         // Trying to recover by reading parentheses
-        // until the end of the "damaged" block is reached
+        // until the end of the "damaged" Node is reached
         if (lookahead("{")) {
             int parentheses = 1;
             while (nextToken()) {
@@ -519,6 +552,11 @@ public class VRMLParser extends Parser {
                     return true;
                 }
             }
+        }
+        
+        // ValueType
+        if (lookahead("}")) {
+            return true;
         }
         
         return false;
@@ -579,7 +617,9 @@ public class VRMLParser extends Parser {
         if (node == null) {
             
             registerError(new LexicalError("Node named '" + currentId +
-                    "' is not declared.", tokenizer.lineno(), currentId));
+                    "' is not declared.", tokenizer.lineno(), currentId, 
+                    new HashSet<String>(defNodesTable.keySet())));
+            
         } else {
 
             System.out.println("Instantiated existing Node" +
@@ -640,7 +680,7 @@ public class VRMLParser extends Parser {
                 value = null;
                 
             } else {
-                
+                System.out.println("---"+lookahead);
                 // involves currentNodes.push(...)
                 parseNodeStatement(); 
 
