@@ -580,7 +580,15 @@ public class VRMLParser extends Parser {
             
             // If there was the "DEF" keyword
             if (currentId != null) {
+                
                 node.setId(currentId); 
+                
+                // Warning if the named node is already defined
+                if (defNodesTable.containsKey(currentId)) {
+                    registerError(new Warning("Node named '" + currentId +
+                          "' is already defined", tokenizer.lineno()));
+                }
+                
                 // Store the node in the hash table
                 defNodesTable.put(currentId, node); 
             }

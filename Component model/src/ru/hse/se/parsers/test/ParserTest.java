@@ -40,6 +40,8 @@ public class ParserTest extends TestCase {
                         System.out.print("** LEXICAL ERROR **\t");
                     } else if (e instanceof TypeMismatchError) {
                         System.out.print("** TYPE MISMATCH **\t");
+                    } else if (e instanceof Warning) {
+                        System.out.print("** WARNING **   \t");
                     } else {
                         System.out.print("** ERROR **\t");
                     }
