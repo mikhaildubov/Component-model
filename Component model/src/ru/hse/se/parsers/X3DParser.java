@@ -571,7 +571,7 @@ public class X3DParser extends Parser {
     private String currentAttribute;
     
     // ! NB: The nested structure of XML nodes requires
-    //       maintaining of a tag stacks: for tag names
+    //       maintaining of two stacks: for tag names
     //       and for the appropriate nodes (if needed).
     
     /* Tag stack */

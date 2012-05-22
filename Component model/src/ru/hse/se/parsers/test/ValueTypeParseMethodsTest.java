@@ -30,7 +30,7 @@ public class ValueTypeParseMethodsTest extends TestCase {
             System.out.println(res.toString());
             
         } catch (DataFormatException e) {
-            System.out.print(e.getMessage());
+            System.out.println(e.getMessage());
         }
     }
     
