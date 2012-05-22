@@ -1,5 +1,6 @@
 package ru.hse.se.types;
 
+import java.util.zip.DataFormatException;
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.errors.SyntaxError;
 
@@ -22,21 +23,43 @@ public class SFFloat extends ValueType {
      *    ANSI C floating point format     *
      ***************************************
      */
-    public static SFFloat parse(Parser parser) throws SyntaxError {
+    public static SFFloat parse(Parser parser) {
 
+        SFFloat res = new SFFloat(0);
+        
+        try {
+            res = parse(parser.lookahead());
+            parser.nextToken();
+        } catch (DataFormatException e) {
+            parser.registerError(new SyntaxError(e.getMessage(),
+                                    parser.tokenizer().lineno()));
+        }
+        
+        return res;
+    }
+    
+    public static SFFloat parse(String str) throws DataFormatException {
+        
         double res = 0;
         
         try {
-            res = Double.parseDouble(parser.lookahead());
-            parser.nextToken();
+            res = Double.parseDouble(str);
             
         } catch (Exception e) {
-            parser.registerError(new SyntaxError("Expected a double-precision float number" +
-                                    " in ANSI C format, but got '" +
-                                    parser.lookahead() + "'", parser.tokenizer().lineno()));
+            throw new DataFormatException
+                ("Expected a double-precision float number" +
+                 " in ANSI C format, but got '" + str + "'");
         }
         
         return new SFFloat(res);
+    }
+    
+    public static SFFloat tryParse(String str) {
+        try {
+            return parse(str);
+        } catch (DataFormatException e) {
+            return null;
+        }
     }
     
     

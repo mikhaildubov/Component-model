@@ -420,7 +420,6 @@ public class VRMLParser extends Parser {
         } else {
 
             // There is no field with the given name
-            
             possibleError = new LexicalError("'" + lookahead +
                                 "' is not a valid field name",
                                 tokenizer.lineno(), lookahead,

@@ -1,5 +1,6 @@
 package ru.hse.se.types;
 
+import java.util.zip.DataFormatException;
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.errors.SyntaxError;
 
@@ -22,22 +23,39 @@ public class SFBool extends ValueType {
      *         FALSE                       *
      ***************************************
      */
-    public static SFBool parse(Parser parser) throws SyntaxError {
+    public static SFBool parse(Parser parser) {
 
-        boolean res = false;
+        SFBool res = new SFBool(false);
         
-        if (parser.lookahead("TRUE")) {
-            parser.match("TRUE");
-            res = true;
-        } else if (parser.lookahead("FALSE")) {
-            parser.match("FALSE");
-            res = false;
-        } else {
-            parser.registerError(new SyntaxError("Expected 'TRUE' or 'FALSE'",
-                                        parser.tokenizer().lineno()));
+        try {
+            res = parse(parser.lookahead());
+            parser.nextToken();
+        } catch (DataFormatException e) {
+            parser.registerError(new SyntaxError(e.getMessage(),
+                                    parser.tokenizer().lineno()));
         }
         
-        return new SFBool(res);
+        return res;
+    }
+    
+    public static SFBool parse(String str) throws DataFormatException {
+        
+        if (str.toUpperCase().equals("TRUE")) {
+            return new SFBool(true);
+        } else if (str.toUpperCase().equals("FALSE")) {
+            return new SFBool(false);
+        } else {
+            throw new DataFormatException("Expected 'TRUE' or 'FALSE', "+
+                                            "but got '" + str + "'");
+        }
+    }
+    
+    public static SFBool tryParse(String str) {
+        try {
+            return parse(str);
+        } catch (DataFormatException e) {
+            return null;
+        }
     }
     
     @Override

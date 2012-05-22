@@ -1,6 +1,8 @@
 package ru.hse.se.types;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.zip.DataFormatException;
 
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.VRMLParser;
@@ -69,5 +71,80 @@ public abstract class MFValueType<T extends ValueType> extends MFType<T> {
         } catch (Exception e) {}
         
         return res;
+    }
+    
+    /**
+     * Reads a MFXxx value from the string.
+     * 
+     ***************************************
+     * mfXxxValue ::=                      *
+     *      sfXxxValue |                   *
+     *      [ ] |                          *
+     *      [ sfXxxValues ] ;              *
+     * sfXxxValues ::=                     *
+     *      sfXxxValue |                   *
+     *      sfXxxValue sfXxxValues ;       *
+     ***************************************
+     *
+     * NB: Does not support MFString (because of quotation marks).
+     *
+     * NB: Behaves like a DFA.
+     */
+    protected static <S extends ValueType, M extends MFType<S>> M
+        parseGeneric(String str, Class<M> clM, Class<S> clS)
+                                    throws DataFormatException {
+ 
+         M res = null;
+         
+         try {
+             res = clM.getConstructor().newInstance();
+        
+             // Some simple trim
+             while (str.charAt(0) == ' ' || str.charAt(0) == '[') {
+                 str = str.substring(1);
+             }
+             while (str.charAt(str.length()-1) == ' ' ||
+                     str.charAt(str.length()-1) == ']') {
+                 str = str.substring(0, str.length()-1);
+             }
+             
+             // Main loop
+             String elem;
+             int i = 0;
+             
+             while (i < str.length()) {
+                 
+                 elem = "";
+                 
+                 while (i < str.length() &&
+                         str.charAt(i) != ' ' && str.charAt(i) != ',') {
+                     elem += str.charAt(i);
+                     i++;
+                 }
+                 
+                 while (i < str.length() &&
+                         (str.charAt(i) == ' ' || str.charAt(i) == ',')) {
+                     i++;
+                 }
+                 
+                 res.add((S)clS.getDeclaredMethod("parse",
+                         String.class).invoke(null, elem));
+             }
+             
+         } catch (InvocationTargetException e) {
+             throw new DataFormatException(e.getMessage());
+         } catch (Exception e) {}
+         
+         return res;
+    }
+    
+    protected static <S extends ValueType, M extends MFType<S>> M
+        tryParseGeneric(String str, Class<M> clM, Class<S> clS) {
+        
+        try {
+            return parseGeneric(str, clM, clS);
+        } catch (DataFormatException e) {
+            return null;
+        }
     }
 }

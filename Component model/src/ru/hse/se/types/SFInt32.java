@@ -1,5 +1,6 @@
 package ru.hse.se.types;
 
+import java.util.zip.DataFormatException;
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.errors.SyntaxError;
 
@@ -21,49 +22,68 @@ public class SFInt32 extends ValueType {
      *    [[+]|-]{[0-9]+|0x[0-9a-fA-F]+}   *
      ***************************************
      */
-    public static SFInt32 parse(Parser parser) throws SyntaxError {
+    public static SFInt32 parse(Parser parser) {
 
-        String lookahead = parser.lookahead();
+        SFInt32 res = new SFInt32(0);
         
+        try {
+            res = parse(parser.lookahead());
+            parser.nextToken();
+        } catch (DataFormatException e) {
+            parser.registerError(new SyntaxError(e.getMessage(),
+                                parser.tokenizer().lineno()));
+        }
+        
+        return res;
+    }
+    
+    public static SFInt32 parse(String str) throws DataFormatException {
         int sign = 1;
-        if (lookahead.charAt(0) == '+') {
-            lookahead = lookahead.substring(1);
-        } else if (parser.lookahead().charAt(0) == '-') {
+        if (str.charAt(0) == '+') {
+            str = str.substring(1);
+        } else if (str.charAt(0) == '-') {
             sign = -1;
-            lookahead = lookahead.substring(1);
+            str = str.substring(1);
         }
         
         int res = 0;
         
-        if(lookahead.startsWith("0x")) { // hex format
+        if(str.startsWith("0x")) { // hex format
             
             char temp;
-            for (int i = 2; i < lookahead.length(); i++) {
-                temp = Character.toLowerCase(lookahead.charAt(i));
+            for (int i = 2; i < str.length(); i++) {
+                temp = Character.toLowerCase(str.charAt(i));
                 if (temp >= '0' && temp <= '9') {
                     res = 16*res + (temp-'0');
                 } else if (temp >= 'a' && temp <= 'f') {
                     res = 16*res + (10+temp-'a');
                 } else {
-                    parser.registerError(new SyntaxError("Expected a hexadecimal integer, " +
-                           "but got '" + lookahead +"'", parser.tokenizer().lineno()));
+                    throw new DataFormatException
+                        ("Expected a hexadecimal integer, " +
+                                    "but got '" + str +"'");
                 }
             }
             
         } else { // decimal format
             
             try {
-                res = Integer.parseInt(lookahead);
+                res = Integer.parseInt(str);
             } catch (Exception e) {
-                parser.registerError(new SyntaxError("Expected an integer number, " +
-                  "but got '" + lookahead + "'", parser.tokenizer().lineno()));
+                throw new DataFormatException
+                    ("Expected an integer number, " + "but got '" + str + "'");
             }
             
         }
         
-        parser.nextToken();
-        
         return new SFInt32(res*sign);
+    }
+    
+    public static SFInt32 tryParse(String str) {
+        try {
+            return parse(str);
+        } catch (DataFormatException e) {
+            return null;
+        }
     }
     
     @Override
