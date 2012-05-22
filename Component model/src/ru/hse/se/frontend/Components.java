@@ -1,8 +1,8 @@
 package ru.hse.se.frontend;
 
 import ru.hse.se.nodes.Node;
-import ru.hse.se.parsers.errors.*;
 import ru.hse.se.types.ValueType;
+import ru.hse.se.parsers.errors.*;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -55,7 +55,7 @@ public class Components {
                 // PARSING SUCCEEDED,
                 // Print the textual scene graph representation
                 introspectNodes(result);
-
+                root=node;
             } else {
                 // PARSING FAILED,
                 // Print the errors list
@@ -191,15 +191,15 @@ public class Components {
      */
     public static class ThisNode extends DefaultMutableTreeNode {
         /** Dates created. */
-        private String type;
+        private  String type;
           private String name;
 
         public ThisNode(String type) {
             super(type);
         }
 
-        public void setType(String name) {
-            setUserObject(name);
+        public void setType(String type) {
+            setUserObject(type);
         }
 
         public String getType() {

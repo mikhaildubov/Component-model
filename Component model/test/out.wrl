@@ -1,0 +1,29 @@
+DEF shape1 Shape {
+  appearance Appearance {
+    material DEF mat Material {
+      diffuseColor -0.2 -0.2 0.71
+    }
+  }
+  geometry Sphere {
+    radius 1.2
+  }
+}
+
+Shape {
+  geometry Box {
+  }
+}
+
+Shape {
+  appearance DEF app_1 Appearance {
+    material USE mat
+  }
+  geometry Text {
+    length [ 3.5 3.0 ]
+    string [ "VRML" "XML" ]
+    maxExtent 0.0
+  }
+}
+
+USE shape1
+

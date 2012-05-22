@@ -54,22 +54,9 @@ public class ComponentsModel extends DynamicTreeTableModel {
 
 
     //Under construction
-    public boolean isCellEditable(Object node, int column) {
-	switch (column) {
-	case 1:
-	    // Allow editing of the name, as long as not the root.
-	    return (node != getRoot());
-	case 2:
-	    // Allow editing of the location, as long as not a
-	    // directory
-	   // return (node instanceof ThisValue);
-	default:
-	    // Don't allow editing of the date fields.
-	    return false;
-	}
-    }
 
-    @Override
+
+   /* @Override
     public Class getColumnClass(int column) {
         if (classes == null || column < 0 || column >= classes.length) {
             return null;
@@ -81,6 +68,6 @@ public class ComponentsModel extends DynamicTreeTableModel {
                     return String.class;
         else
         return classes[column];
-    }
+    }*/
 }
 

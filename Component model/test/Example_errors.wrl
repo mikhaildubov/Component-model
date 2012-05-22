@@ -2,8 +2,7 @@
 
 DEF shape1 Shape
 {
-  appearance Appearance
-  {
+  appearance Appearance {
     material DEF mat Material
     {
       diffuseColor -2e-1 +0.71                 # 2 floats instead of 3
@@ -16,8 +15,7 @@ DEF shape1 Shape
 } # Shape
 
 Shape                                          # no '{'
-   appearance Appearance 
-   {
+   appearance Appearance {
 	 material DEF mat Material                 # Warning: 'mat' already defined
 	 {diffuesColor 1 0 1}}                     # diffuesColor <-> diffuseColor
    geometry Bx {}                              # Bx <-> Box
@@ -28,8 +26,7 @@ Shape {
       material USE mat
    }
    geometry Material {                         # Type mismatch
-        string [ "VRML" "XML" ]
-        length  [ 3.5, 3.0 ]
+        diffuseColor 0 0 0.2
                                                # no '}'
 }
 

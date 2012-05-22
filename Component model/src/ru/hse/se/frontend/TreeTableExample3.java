@@ -1,12 +1,19 @@
 package ru.hse.se.frontend;
 
 import javax.swing.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.*;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.ArrayList;
 
 import ru.hse.se.parsers.VRMLParser;
+import sun.swing.DefaultLookup;
 
 /**
  * Assembles the UI. The UI consists of a JTreeTable and a menu.
@@ -40,13 +47,14 @@ public class TreeTableExample3 {
 	Container       cPane = frame.getContentPane();
 	JMenuBar        mb = createMenuBar();
 	TreeTableModel  model = createModel(path);
-    //treeTable.setModel(model);
+
 	treeTable = createTreeTable(model);
+
         JScrollPane sp = new JScrollPane(treeTable);
         sp.getViewport().setBackground(Color.white);
 	cPane.add(sp);
-        for(int i = 0; i < treeTable.getRowCount(); i ++) treeTable.getTree().expandRow(i);
-        frame.setJMenuBar(mb);
+  //      for(int i = 0; i < treeTable.getRowCount(); i ++) treeTable.getTree().expandRow(i);
+    frame.setJMenuBar(mb);
 	frame.pack();
 	frame.show();
     }
@@ -55,12 +63,14 @@ public class TreeTableExample3 {
      * Creates and returns the instanceof JTreeTable that will be used.
      */
     protected JTreeTable createTreeTable(TreeTableModel model) {
-	JTreeTable       treeTable = new JTreeTable(model);
-
-	//treeTable.setDefaultRenderer(Date.class, new ComponentsDateRenderer());
+	final JTreeTable       treeTable = new JTreeTable(model);
+        treeTable.getTree().getSelectionModel().setSelectionMode
+                (TreeSelectionModel.SINGLE_TREE_SELECTION);
 	treeTable.setDefaultRenderer(Object.class,
 				     new ComponentsStringRenderer());
-        treeTable.getTree().setShowsRootHandles(true);
+        treeTable.getTree().setCellRenderer(new VRMLComponentsCellRenderer());
+
+
 	return treeTable;
     }
 
@@ -193,28 +203,30 @@ public class TreeTableExample3 {
 	else {
 	    // No file specified, see if the user has one in their home
 	    // directory.
-	    String            path;
+	    String path;
 
 	    try {
-		path = System.getProperty("user.home");
-		if (path != null) {
-	    path += File.separator + ".netscape" + File.separator +
-                    "GUI/components.wrl";
-		    File file = new File(path);
-		    if (!file.exists()) {
-			path = null;
-		    }
-		}
+		path = null;
 	    }
 	    catch (Throwable th) {
 		path = null;
 	    }
 	    if (path == null) {
-	        // None available, use a default.
-    		path = "C:/Users/MSDubov/HSE/II year/Coursework/Program/Component model/Component model/test/Example.wrl";
+		// None available, use a default.
+		path = "test/Example.wrl";
 	    }
-            new TreeTableExample3(path);
+        new TreeTableExample3(path);
 	}
+    }
+    /** Returns an ImageIcon, or null if the path was invalid. */
+    protected static ImageIcon createImageIcon(String path) {
+        java.net.URL imgURL = TreeTableExample3.class.getResource(path);
+        if (imgURL != null) {
+            return new ImageIcon(imgURL);
+        } else {
+            System.err.println("Couldn't find file: " + path);
+            return null;
+        }
     }
 }
 

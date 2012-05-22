@@ -2,7 +2,7 @@ package ru.hse.se.nodes;
 
 import java.io.Serializable;
 
-public class Geometry extends Node implements Serializable {
+public abstract class Geometry extends Node implements Serializable {
 
     public Geometry() {
         

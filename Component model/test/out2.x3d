@@ -1,0 +1,11 @@
+<Scene>
+  <Group>
+    <fieldValue name='children'>
+      <Box>
+      </Box>
+      <Sphere radius='1.3'>
+      </Sphere>
+    </fieldValue>
+  </Group>
+
+</Scene>

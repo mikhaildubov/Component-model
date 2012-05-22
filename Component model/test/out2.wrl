@@ -1,0 +1,10 @@
+Group {
+  children [
+    Box {
+    }
+    Sphere {
+      radius 1.3
+    }
+  ]
+}
+

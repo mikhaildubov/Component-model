@@ -35,15 +35,15 @@ public class ParserTest extends TestCase {
                 // Print the errors list
                 for (Error e : parser.getParsingErrors()) {
                     if (e instanceof SyntaxError) {
-                        System.out.print("** SYNTAX ERROR **\t");
+                        System.out.print("** SYNTAX ERROR  **\t");
                     } else if (e instanceof LexicalError) {
                         System.out.print("** LEXICAL ERROR **\t");
                     } else if (e instanceof TypeMismatchError) {
                         System.out.print("** TYPE MISMATCH **\t");
                     } else if (e instanceof Warning) {
-                        System.out.print("** WARNING **   \t");
+                        System.out.print("**    WARNING    **\t");
                     } else {
-                        System.out.print("** ERROR **\t");
+                        System.out.print("**     ERROR     **\t");
                     }
                     
                     System.out.println(e.getMessage());
