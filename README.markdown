@@ -43,6 +43,9 @@ textNode(text)</code></pre>
 <em>Under construction</em>
 <br/><br/>
 
+<h2>Documentation</h2>
+<p>The project comes along with the appropriate <a href="http://en.wikipedia.org/wiki/GOST">GOST</a> Documentation.</p>
+<br/><br/>
 
 <h2>Reference books:</h2>
 <table border = "0" width = "60%">
