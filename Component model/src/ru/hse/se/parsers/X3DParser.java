@@ -147,7 +147,7 @@ public class X3DParser extends Parser {
                     value.append(lookahead);
                     value.append(" ");
                     nextToken();
-                } while(! lookahead("<"));
+                } while(! lookahead("<") && lookahead != null);
                 textNode(value.toString());
             }
         }
@@ -467,6 +467,11 @@ public class X3DParser extends Parser {
      * @param name field name
      */
     private void matchFieldValueAndSetField(String name) {
+        
+        if (currentNodes.isEmpty()) {
+            return;
+        }
+        
         Node currentNode = currentNodes.peek();
         Class<?> currentFieldType;
         
@@ -519,7 +524,7 @@ public class X3DParser extends Parser {
      * Returns the lookahead token.
      */
     public String lookahead() {
-        return lookahead;
+        return (lookahead == null ? "" : lookahead);
     }
     
     /**
