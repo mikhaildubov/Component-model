@@ -60,6 +60,8 @@ public class MFString extends MFValueType<SFString> {
                      i++;
                  }
                  
+                 System.out.println("!"+elem);
+                 
                  res.add(SFString.parse(elem));
              }
              

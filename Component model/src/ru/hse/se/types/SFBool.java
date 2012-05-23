@@ -25,7 +25,7 @@ public class SFBool extends ValueType {
      */
     public static SFBool parse(Parser parser) {
 
-        SFBool res = new SFBool(false);
+        SFBool res = null;
         
         try {
             res = parse(parser.lookahead());

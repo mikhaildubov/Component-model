@@ -54,6 +54,19 @@ public class X3DParser extends Parser {
     protected void parseScene() throws IOException {
 
         parseXML();
+        
+        // Some token left unparsed
+        if (lookahead != null) {
+            registerError (new SyntaxError("Unrecognized lexeme sequence starting at '"
+                                        + lookahead + "'", tokenizer.lineno()));  
+        }
+        
+        // If some tags are not closed
+        while (! currentTags.isEmpty()) {
+            registerError (new SyntaxError ("No closing tag for opening tag <"
+                              + currentTags.peek() + ">", tokenizer.lineno()));
+            currentTags.pop();
+        }
     }
     
     /**
@@ -70,21 +83,26 @@ public class X3DParser extends Parser {
             
             // 1. Opening or closing tag starts
             if (tryMatch("<")) {
+                
+                if (readingTag) {
+                    registerError (new SyntaxError("Expected '>', but got '<'",
+                                                            tokenizer.lineno()));
+                }
 
                 readingTag = true;
                 
                 if (lookahead("/")) {
                     match("/");
                     if (currentTags.isEmpty()) {
-                        registerError(new SyntaxError ("Closing tag + '" + lookahead
+                        registerError(new SyntaxError ("Closing tag '" + lookahead
                                 + "' does not match any opening tag.",
                                 tokenizer.lineno()));
                     } else {
                         String openingTag = currentTags.pop();
                         
                         if (! lookahead(openingTag)) {
-                            registerError(new SyntaxError ("Closing tag + '" + lookahead
-                                              + "' does not match the opening tag + '"
+                            registerError(new SyntaxError ("Closing tag '" + lookahead
+                                              + "' does not match the opening tag '"
                                               + openingTag + "'.", tokenizer.lineno()));
                         } else {
                             closingTag(lookahead);
@@ -172,10 +190,12 @@ public class X3DParser extends Parser {
 
         // Nested nodes (SFNode/MFNode); not value types
 
+        Node currentNode = null;
+        
         try {
             
             // Uses REFLECTION
-            Node currentNode = createInstance(name);
+            currentNode = createInstance(name);
             
             // If the second top tag is <fieldValue>,
             // then we have one of the nodes in MFNode value
@@ -223,9 +243,18 @@ public class X3DParser extends Parser {
         
             currentNodes.push(currentNode);
             
+        } catch (ClassNotFoundException e) {
+            registerError(new LexicalError ("'" + name +
+                    "' is not a valid node name", tokenizer.lineno(), name, null));
+            //currentNodes.push(null);
+        } catch (NoSuchMethodException e) {
+            registerError(new TypeMismatchError (currentNode.getClass(),
+                        currentNodes.peek().getClass(),tokenizer.lineno()));
+            //currentNodes.push(null);
         } catch (Exception e) {
             registerError(new ParsingError
                    ("Could not instantiate node " + name, tokenizer.lineno()));
+            //currentNodes.push(null);
         }
     }
     
@@ -268,10 +297,15 @@ public class X3DParser extends Parser {
             return;
         }
         
-        Node closed = currentNodes.pop();
+        Node closed = null;
+        
+        if (! currentNodes.isEmpty() &&
+                name.equals(currentNodes.peek().getClass().getSimpleName())) {
+            closed = currentNodes.pop();
+        }
         
         // Adds a root node to the sceneGraph array
-        if (currentNodes.isEmpty()) {
+        if (currentNodes.isEmpty() && closed != null) {
             sceneGraph.add(closed);
         }
     }
@@ -284,7 +318,7 @@ public class X3DParser extends Parser {
      */
     private void attribute(String name) {
         
-                            System.out.println("Attribute: " + name);
+                            //System.out.println("Attribute: " + name);
 
         match("'");
         
@@ -530,6 +564,8 @@ public class X3DParser extends Parser {
     @Override
     public boolean nextToken() {
         
+        lookaheadIsQuotatedString = false;
+        
         try {
             int ttype = tokenizer.nextToken();
             
@@ -544,6 +580,7 @@ public class X3DParser extends Parser {
             } else if (ttype == '"') {
                 // Quoted Strings
                 lookahead = tokenizer.sval;
+                lookaheadIsQuotatedString = true;
             } else if (ttype == StreamTokenizer.TT_EOF) {
                 lookahead = null; // to indicate EOF
                 return false;

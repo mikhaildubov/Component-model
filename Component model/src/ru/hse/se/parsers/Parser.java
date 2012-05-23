@@ -99,7 +99,7 @@ public abstract class Parser {
      * @return the value read from the stream
      * @throws Error
      */
-    protected Object parseValueType(Class<?> currentFieldType) throws Error {
+    protected Object parseValueType(Class<?> currentFieldType) {
 
         Object value = null;
         // TODO: No Syntax Error messages from type classes?..
@@ -109,12 +109,11 @@ public abstract class Parser {
             try {
                 value = currentFieldType.getDeclaredMethod
                     ("parse", Parser.class).invoke(null, this);
+            } catch (NoSuchMethodException e) {
+                registerError (new ParsingError("Parse rules for type " +
+                            currentFieldType.getName() + " not defined.",
+                                                    tokenizer.lineno()));
             } catch (Exception e) { }
-            
-            if (value == null) {
-                throw new Error("Parse rules for type " +
-                        currentFieldType.getName() + " not defined.");
-            }
         }
         
         /****** b) Java primitive types => use VRML wrappers (SFBool, SFFloat, ...) ******/
@@ -205,6 +204,15 @@ public abstract class Parser {
     public abstract String lookahead();
     
     /**
+     * Determines whether lookahead is a quotated string.
+     * 
+     * @return true if lookahead is a string, false otherwise
+     */
+    public boolean lookaheadIsQuotatedString() {
+        return lookaheadIsQuotatedString;
+    }
+    
+    /**
      * Reads the next token from the input.
      * @returns false when the next token is unavailable, true otherwise
      */
@@ -229,8 +237,7 @@ public abstract class Parser {
         } else {
             
             registerError(new SyntaxError("Expected '" + token + "', but got '" + 
-                                    lookahead() + "'",
-                                    tokenizer.lineno()));
+                                         lookahead() + "'", tokenizer.lineno()));
         }
         
         return true;
@@ -308,15 +315,16 @@ public abstract class Parser {
      * @return the node object (if this node type exists)
      * @throws Exception if there are instantiation errors
      */
-    protected Node createInstance(String str) throws Exception {
+    protected Node createInstance(String str)
+                    throws ClassNotFoundException {
         for (String pkg : nodePackages) {
             try {
                 Node res = (Node)(Class.forName(pkg + "." + str).newInstance());
                 // here => Class found
                 return res;
-            } catch (ClassNotFoundException e) {}           
+            } catch (Exception e) {}           
         }
-        throw new Exception();
+        throw new ClassNotFoundException();
     }
     
     /**
@@ -349,6 +357,9 @@ public abstract class Parser {
     
     /** The nodes package name (needed for reflection) */
     protected static final ArrayList<String> nodePackages;
+    
+    /** Determines whether lookahead is a quotated string */
+    protected boolean lookaheadIsQuotatedString = false;
     
     static {
         nodePackages = new ArrayList<String>();

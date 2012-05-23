@@ -25,7 +25,7 @@ public class SFFloat extends ValueType {
      */
     public static SFFloat parse(Parser parser) {
 
-        SFFloat res = new SFFloat(0);
+        SFFloat res = null;
         
         try {
             res = parse(parser.lookahead());

@@ -59,7 +59,7 @@ public class VRMLParser extends Parser {
         
         parseStatements();
         
-        // Some token left unparsed
+        // Some tokens left unparsed
         if (lookahead != null) {
             registerError (new SyntaxError("Unrecognized lexeme sequence starting at '"
                                         + lookahead + "'", tokenizer.lineno()));  
@@ -481,6 +481,8 @@ public class VRMLParser extends Parser {
     @Override
     public boolean nextToken() {
         
+        lookaheadIsQuotatedString = false;
+        
         try {
             int ttype = tokenizer.nextToken();
             
@@ -494,6 +496,7 @@ public class VRMLParser extends Parser {
             } else if (ttype == '"') {
                 // Quoted Strings
                 lookahead = tokenizer.sval;
+                lookaheadIsQuotatedString = true;
             } else if (ttype == StreamTokenizer.TT_EOF) {
                 // End of file
                 lookahead = null; // to indicate EOF

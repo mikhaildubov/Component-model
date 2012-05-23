@@ -32,7 +32,7 @@ public abstract class ValueType extends VRMLType {
      * returns null if parsing didn't succeed.
      * 
      * @param strString that contains the value
-     * @return the ValueType object or null
+     * @return the ValueType object or null, if there are errors
      */
     public static ValueType tryParse(String str) {
         return null;

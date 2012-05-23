@@ -1,0 +1,23 @@
+<Scene>
+    <Shape DEF='shape1'>
+        <Appearance>
+            <Material DEF='mat' diffuseColor='-2e-1 -0.2' />
+        </Appearance>
+        <Sphere radius='1.2'/>
+    </Shape>
+    
+    <Shape>
+        <Material />
+    </Shape>
+    
+    <Shape>
+        <Appeaance DEF='app_1'>
+            <Material USE='mat />
+        </Appearance>
+        <Text string='"VRML" "XML"'>
+            <fieldValue name='length' value=3.5, 3.0' />
+        </Text>
+    </Shape>
+    
+    <Shape USE='shape1' >
+</Scene>

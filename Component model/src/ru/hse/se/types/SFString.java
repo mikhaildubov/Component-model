@@ -26,15 +26,17 @@ public class SFString extends ValueType {
      ***************************************
      */
     public static SFString parse(Parser parser) {
-        // TODO: Check whether it is a string (qutation marks)!
-        SFString res = new SFString("");
         
-        try {
-            res = parse(parser.lookahead());
-            parser.nextToken();
-        } catch (DataFormatException e) {
-            parser.registerError(new SyntaxError(e.getMessage(),
-                                parser.tokenizer().lineno()));
+        SFString res = null;
+        
+        if (parser.lookaheadIsQuotatedString()) {
+            try {
+                res = parse(parser.lookahead());
+                parser.nextToken();
+            } catch (DataFormatException e) {
+                parser.registerError(new SyntaxError(e.getMessage(),
+                                    parser.tokenizer().lineno()));
+            }
         }
         
         return res;

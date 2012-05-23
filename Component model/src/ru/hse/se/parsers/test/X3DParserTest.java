@@ -13,4 +13,9 @@ public class X3DParserTest extends ParserTest {
         
         parserTest(new X3DParser(), "test\\Example2.x3d");
     }
+    
+    public void testParseErrors() throws FileNotFoundException {
+        
+        parserTest(new X3DParser(), "test\\Example_errors.x3d");
+    }
 }

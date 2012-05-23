@@ -24,7 +24,7 @@ public class SFInt32 extends ValueType {
      */
     public static SFInt32 parse(Parser parser) {
 
-        SFInt32 res = new SFInt32(0);
+        SFInt32 res = null;
         
         try {
             res = parse(parser.lookahead());
