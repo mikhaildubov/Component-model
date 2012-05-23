@@ -1,17 +1,8 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
-import ru.hse.se.parsers.errors.SyntaxError;
-import ru.hse.se.types.MFBool;
-import ru.hse.se.types.MFFloat;
-import ru.hse.se.types.MFInt32;
-import ru.hse.se.types.MFString;
-import ru.hse.se.types.SFBool;
-import ru.hse.se.types.SFFloat;
-import ru.hse.se.types.SFInt32;
-import ru.hse.se.types.SFString;
-import ru.hse.se.types.ValueType;
-
+import ru.hse.se.parsers.errors.*;
+import ru.hse.se.types.*;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -44,7 +35,7 @@ public abstract class Parser {
         init();
 
         sceneGraph = new ArrayList<Node>();
-        parsingErrors = new ArrayList<Error>();
+        parsingErrors = new ArrayList<ParsingError>();
 
         // !!! The entry point !!!
         parseScene();
@@ -186,7 +177,8 @@ public abstract class Parser {
         
         /****** c) Error otherwise ******/
         else {
-           registerError(new Error("Value of unknown type"));
+           registerError(new ParsingError
+                    ("Value of unknown type", tokenizer.lineno()));
         }
         
         return value;
@@ -268,7 +260,7 @@ public abstract class Parser {
      * 
      * @param e the error object
      */
-    public boolean registerError(Error e) {
+    public boolean registerError(ParsingError e) {
 
         if (e != null) {
             parsingErrors.add(e);
@@ -282,7 +274,7 @@ public abstract class Parser {
      * 
      * @return the ArrayList of parsing error objects
      */
-    public ArrayList<Error> getParsingErrors() {
+    public ArrayList<ParsingError> getParsingErrors() {
         return parsingErrors;
     }
     
@@ -346,14 +338,14 @@ public abstract class Parser {
     protected ArrayList<Node> sceneGraph;
     
     /** The errors that occured during parsing */
-    protected ArrayList<Error> parsingErrors;
+    protected ArrayList<ParsingError> parsingErrors;
     
     /**
      * The error that occured during the last call
      * of some tryXxx method; such an error is not
      * registered until registerPossibleError() is called.
      */
-    protected Error possibleError = null;
+    protected ParsingError possibleError = null;
     
     /** The nodes package name (needed for reflection) */
     protected static final ArrayList<String> nodePackages;

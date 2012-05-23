@@ -33,7 +33,7 @@ public class ParserTest extends TestCase {
             } else {
                 // PARSING FAILED,
                 // Print the errors list
-                for (Error e : parser.getParsingErrors()) {
+                for (ParsingError e : parser.getParsingErrors()) {
                     if (e instanceof SyntaxError) {
                         System.out.print("** SYNTAX ERROR  **\t");
                     } else if (e instanceof LexicalError) {
@@ -46,7 +46,7 @@ public class ParserTest extends TestCase {
                         System.out.print("**     ERROR     **\t");
                     }
                     
-                    System.out.println(e.getMessage());
+                    System.out.println(((ParsingError)e).getLineMessage());
                 }
             }
             

@@ -1,13 +1,18 @@
 package ru.hse.se.parsers.errors;
 
-public abstract class ParsingError extends Error {
+public class ParsingError extends Error {
 
     public ParsingError(String msg, int line) {
-        super("Line " + line + ": " + msg);
+        super(msg);
+        this.line = line;
     }
     
     public int getLine() {
         return line;
+    }
+    
+    public String getLineMessage() {
+        return ("Line " + line + ": " + getMessage());
     }
     
     protected int line;

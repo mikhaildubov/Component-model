@@ -1,9 +1,8 @@
 package ru.hse.se.parsers;
 
 import ru.hse.se.nodes.Node;
-import ru.hse.se.parsers.errors.SyntaxError;
+import ru.hse.se.parsers.errors.*;
 import ru.hse.se.types.MFNode;
-
 import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.util.HashMap;
@@ -203,8 +202,11 @@ public class X3DParser extends Parser {
                     // we use the containterField property.
                     
                     Node parentNode = currentNodes.peek();
-                    
                     String field = currentNode.containerField();
+                    
+                    // Linking between the scene graph and the source code
+                    // through line numbers for each property.
+                    parentNode.setFieldDescriptionLine(field, tokenizer.lineno());
                     
                     Class<?> currentFieldType = parentNode.getClass().
                             getDeclaredMethod("get" +
@@ -222,7 +224,8 @@ public class X3DParser extends Parser {
             currentNodes.push(currentNode);
             
         } catch (Exception e) {
-            registerError(new Error("Could not instantiate node " + name));
+            registerError(new ParsingError
+                   ("Could not instantiate node " + name, tokenizer.lineno()));
         }
     }
     
@@ -315,6 +318,10 @@ public class X3DParser extends Parser {
                     Node parentNode = currentNodes.peek();
                     String field = node.containerField();
                     
+                    // Linking between the scene graph and the source code
+                    // through line numbers for each property.
+                    parentNode.setFieldDescriptionLine(field, tokenizer.lineno());
+                    
                     try {
                         
                         Class<?> currentFieldType = parentNode.getClass().
@@ -329,7 +336,8 @@ public class X3DParser extends Parser {
                             invoke(currentNodes.peek(), node);
                     } catch (Exception e) {
                         
-                        registerError(new Error("Could not use node " + lookahead));
+                        registerError(new ParsingError
+                                ("Could not use node " + lookahead, tokenizer.lineno()));
                     }
                 }
                 
@@ -360,6 +368,12 @@ public class X3DParser extends Parser {
                         " is not declared.", tokenizer.lineno()));
             }
             if (MFNode.class.isAssignableFrom(fieldType)) {
+
+                // Linking between the scene graph and the source code
+                // through line numbers for each property.
+                currentNodes.peek().setFieldDescriptionLine
+                                (lookahead, tokenizer.lineno());
+                
                 try {
                     MFNode value = (MFNode)(fieldType.newInstance());
                     fieldValueMFNodes.push(value);                    
@@ -371,8 +385,8 @@ public class X3DParser extends Parser {
                         new Class[] {fieldType}).
                         invoke(currentNodes.peek(), value);
                 } catch (Exception e) {
-                    registerError(new Error("Could not set the value of" +
-                                            " field " + lookahead));
+                    registerError(new ParsingError("Could not set the value of" +
+                                      " field " + lookahead, tokenizer.lineno()));
                 }
             }
             
@@ -422,6 +436,10 @@ public class X3DParser extends Parser {
         Node currentNode = currentNodes.peek();
         Class<?> currentFieldType;
         
+        // Linking between the scene graph and the source code
+        // through line numbers for each property.
+        currentNode.setFieldDescriptionLine(name, tokenizer.lineno());
+        
         try {
             /****** Getting the field type ******/
             currentFieldType = currentNode.getClass().
@@ -438,7 +456,9 @@ public class X3DParser extends Parser {
                 invoke(currentNode, attrValue);
 
         } catch (Exception e) {
-            registerError(new Error("Could not set the value of field " + name));
+            registerError(new ParsingError
+              ("Could not set the value of field " + name,
+                                      tokenizer.lineno()));
         }
     }
 

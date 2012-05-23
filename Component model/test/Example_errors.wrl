@@ -16,8 +16,8 @@ DEF shape1 Shape
 
 Shape                                          # no '{'
    appearance Appearance {
-	 material DEF mat Material                 # Warning: 'mat' already defined
-	 {diffuesColor 1 0 1}}                     # diffuesColor <-> diffuseColor
+     material DEF mat Material                 # Warning: 'mat' already defined
+     {diffuesColor 1 0 1}}                     # diffuesColor <-> diffuseColor
    geometry Bx {}                              # Bx <-> Box
 }
 

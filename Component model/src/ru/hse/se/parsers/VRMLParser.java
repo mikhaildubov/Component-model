@@ -672,6 +672,11 @@ public class VRMLParser extends Parser {
             return false;
         }
         
+        // Linking between the scene graph and the source code
+        // through line numbers for each property.
+        currentNodes.peek().setFieldDescriptionLine
+                (currentField.peek(), tokenizer.lineno());
+        
         /****** a) Node type => recursive call of the appropriate parser Methods ******/
         if (Node.class.isAssignableFrom(currentFieldType)) {
             
