@@ -1,15 +1,18 @@
 package ru.hse.se.frontend;
 
 import ru.hse.se.nodes.Node;
-import ru.hse.se.types.ValueType;
-import ru.hse.se.parsers.errors.*;
+import ru.hse.se.parsers.errors.SyntaxError;
+import ru.hse.se.types.*;
 
-import java.io.*;
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.tree.*;
+import java.util.ArrayList;
+import java.util.Stack;
+import java.util.zip.DataFormatException;
 
 
 //import junit.framework.TestCase;
@@ -33,11 +36,18 @@ public class Components {
     public ThisNode getRoot() {
         return root;
     }
-
+    ArrayList<Node> result = null;
     private static final short NO_ENTRY = 0;
     private static final short BOOKMARK_ENTRY = 2;
     private static final short DIRECTORY_ENTRY = 3;
+    private static int lineCounter;
 
+
+    public ArrayList<Node> getResult(String s)
+    {
+       // parse( );
+        return result;
+    }
     /**
      * The heart of the parsing. The parser parses the data and the data is
      * parsed. It creates new
@@ -45,7 +55,7 @@ public class Components {
      */
     protected void parse(ru.hse.se.parsers.Parser parser, String path) {
         try {
-            ArrayList<Node> result = null;
+
 
             result = parser.parse(new FileReader(path));
 
@@ -107,7 +117,7 @@ public class Components {
         }
 
         System.out.println(n.getClass().getSimpleName() + " = ");
-        //node.setName(n.getClass().getSimpleName() + " = ");
+        node.setValue(n.getClass().getSimpleName());
 
         try {
 
@@ -127,11 +137,14 @@ public class Components {
                             for (int i = 0; i < 2 * (nodes.size()) - 1; i++) {
                                 System.out.print("   ");
                             }
+                            lineCounter= n.getFieldDescriptionLine(field);
                             System.out.println(field + " : ");
                             ThisNode newNode = new ThisNode(field);
                             newNode.setType(field);
+                            newNode.setId(lineCounter);
                             node.add(newNode);
                             node = newNode;
+
 
                          //       node.depthFirstEnumeration();
                             introspect(child);
@@ -156,6 +169,7 @@ public class Components {
                         thisValue.setName("-");
                         thisValue.setType(field);
                         thisValue.setName(field);
+                        thisValue.setId(lineCounter+1);
                         thisValue.setValue(value.toString());
                         node.add(thisValue);
                       //node = (ThisNode) node.getParent();
@@ -191,28 +205,37 @@ public class Components {
      */
     public static class ThisNode extends DefaultMutableTreeNode {
         /** Dates created. */
-        private  String type;
-          private String name;
+        private String type;
+          private String value;
+          private int id;
 
         public ThisNode(String type) {
             super(type);
         }
 
         public void setType(String type) {
-            setUserObject(type);
+            if(getUserObject()==null)
+                setUserObject(type);
         }
 
         public String getType() {
             return (String) getUserObject();
         }
-          public void setName(String name) {
-              this.name = name;
+
+          public void setValue(String value) {
+              this.value=value;
           }
 
-          public String getName() {
-              return name;
+          public String getValue() {
+              return value;
+          }
+          public void setId(int id) {
+              this.id=id;
           }
 
+          public int getId() {
+              return id;
+          }
 
     }
 
@@ -226,8 +249,15 @@ public class Components {
         /** The URL the bookmark represents. */
         private String value;
 
-        private String type;
+        private int id;
 
+        public void setId(int id) {
+            this.id=id;
+        }
+
+        public int getId() {
+            return id;
+        }
 
         public ThisValue(String type) {
             super(type);
@@ -250,7 +280,136 @@ public class Components {
         }
 
         public void setValue(String value) {
-            this.value = value;
+
+            if(getType().equals("diffuseColor"))
+            {
+                try {
+                    SFColor.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+
+                }
+            }
+            if(getType().equals("radius"))
+            {
+                try {
+                    SFFloat.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("maxExtent"))
+            {
+                try {
+                    SFFloat.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("length"))
+            {
+                try {
+                    MFFloat.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("string"))
+            {
+                try {
+                    MFString.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }/*
+            if(getType().equals("MFInt32"))
+            {
+                try {
+                   MFInt32.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("MFNode"))
+            {
+                try {
+                    MFNode.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+
+            /*if(getType().equals("MFType"))
+            {
+                try {
+                    MFType.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("MFValueType"))
+            {
+                try {
+                    MFBool.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }*/ /*
+            if(getType().equals("SFBool"))
+            {
+                try {
+                    SFBool.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("diffuseColor"))
+            {
+                try {
+                    SFColor.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("SFFloat"))
+            {
+                try {
+                    SFFloat.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("SFInt32"))
+            {
+                try {
+                    SFInt32.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+            if(getType().equals("SFString"))
+            {
+                try {
+                    SFString.parse(value);
+                    this.value=value;
+                } catch (DataFormatException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            } */
+
+
         }
 
         public String getValue() {

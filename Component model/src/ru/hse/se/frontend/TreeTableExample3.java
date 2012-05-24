@@ -1,19 +1,20 @@
 package ru.hse.se.frontend;
 
+import ru.hse.se.nodes.Node;
+import ru.hse.se.parsers.VRMLParser;
+
 import javax.swing.*;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.table.*;
-import javax.swing.tree.*;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
-
-import ru.hse.se.parsers.VRMLParser;
-import sun.swing.DefaultLookup;
 
 /**
  * Assembles the UI. The UI consists of a JTreeTable and a menu.
@@ -30,9 +31,13 @@ public class TreeTableExample3 {
     private JTreeTable         treeTable;
     /** Frame containing everything. */
     private JFrame             frame;
+
+     ArrayList<Node> nodes;
+
+    private JPanel panel;
     /** Path created for. */
     private String             path;
-
+    JTextArea textArea;
 
     /**
      * Creates a TreeTableExample3, loading the Components from the file
@@ -43,25 +48,52 @@ public class TreeTableExample3 {
 	ttCount++;
 
 	frame = createFrame();
-
 	Container       cPane = frame.getContentPane();
 	JMenuBar        mb = createMenuBar();
 	TreeTableModel  model = createModel(path);
 
-	treeTable = createTreeTable(model);
 
-        JScrollPane sp = new JScrollPane(treeTable);
+        cPane.setLayout(new BorderLayout(5,5));
+        Dimension dim=new Dimension(600, 600);
+        cPane.setPreferredSize(dim);
+        textArea=new JTextArea();
+
+        try {
+            textArea.read(new FileReader(path),null);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        treeTable = createTreeTable(model);
+      //  textArea.setEditable(false);
+
+        JScrollPane tp =new JScrollPane(textArea,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane sp = new JScrollPane(treeTable,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         sp.getViewport().setBackground(Color.white);
-	cPane.add(sp);
-  //      for(int i = 0; i < treeTable.getRowCount(); i ++) treeTable.getTree().expandRow(i);
+
+        Dimension scrDim=new Dimension(300,600);
+        sp.setLocation(0,0);
+        sp.setPreferredSize(scrDim);
+        tp.setLocation(300,0);
+        tp.setPreferredSize(scrDim);
+       //textArea.append(model.toString());
+	    cPane.add(sp, BorderLayout.LINE_START);
+     cPane.add(tp, BorderLayout.CENTER);
+        cPane.setPreferredSize(dim);
+
+
+    //frame.add(cPane);
     frame.setJMenuBar(mb);
-	frame.pack();
-	frame.show();
+	//frame.pack();
+
+	frame.setVisible(true);
     }
+
+
 
     /**
      * Creates and returns the instanceof JTreeTable that will be used.
      */
+
     protected JTreeTable createTreeTable(TreeTableModel model) {
 	final JTreeTable       treeTable = new JTreeTable(model);
         treeTable.getTree().getSelectionModel().setSelectionMode
@@ -69,6 +101,35 @@ public class TreeTableExample3 {
 	treeTable.setDefaultRenderer(Object.class,
 				     new ComponentsStringRenderer());
         treeTable.getTree().setCellRenderer(new VRMLComponentsCellRenderer());
+        treeTable.getTree().getModel().addTreeModelListener(new TreeModelListener() {
+            @Override
+            public void treeNodesChanged(TreeModelEvent e) {
+                saveToFile(path);
+            }
+
+            @Override
+            public void treeNodesInserted(TreeModelEvent e) {
+                //To change boy of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void treeNodesRemoved(TreeModelEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            @Override
+            public void treeStructureChanged(TreeModelEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+        });
+       /* treeTable.getTree().addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                textArea.select(textArea.getText().indexOf(e.getPath().getLastPathComponent().toString()),e.getPath().getLastPathComponent().toString().length()+textArea.getText().indexOf(e.getPath().getLastPathComponent().toString()));
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+        });  */
 
 
 	return treeTable;
@@ -87,7 +148,9 @@ public class TreeTableExample3 {
      */
     protected JFrame createFrame() {
 	JFrame       retFrame = new JFrame("TreeTable III -- " + path);
-
+        Dimension dimension = new Dimension(600, 400)          ;
+        retFrame.setSize(600,600);
+        retFrame.setMinimumSize(dimension);
 	retFrame.addWindowListener(new WindowAdapter() {
 	    public void windowClosing(WindowEvent we) {
 		frame.dispose();
@@ -116,6 +179,7 @@ public class TreeTableExample3 {
 		    String      newPath = fc.getSelectedFile().getPath();
 
 		    new TreeTableExample3(newPath);
+
 		}
 	    }
 	});
@@ -227,6 +291,25 @@ public class TreeTableExample3 {
             System.err.println("Couldn't find file: " + path);
             return null;
         }
+    }
+
+
+    public boolean saveToFile(String namefile)
+    {
+        try
+        {
+            File file = new File (namefile);
+            FileWriter out = new FileWriter(file);
+            String text = textArea.getText();
+            out.write(text);
+            out.close();
+            return true;
+        }
+        catch (IOException e)
+        {
+            System.out.println("Error saving file.");
+        }
+        return false;
     }
 }
 

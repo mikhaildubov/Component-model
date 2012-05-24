@@ -1,20 +1,14 @@
 package ru.hse.se.frontend;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Insets;
-import java.awt.Rectangle;
+import sun.swing.DefaultLookup;
+
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.plaf.basic.BasicGraphicsUtils;
-import javax.swing.border.EmptyBorder;
 import javax.swing.tree.TreeCellRenderer;
-
-import sun.swing.DefaultLookup;
+import java.awt.*;
 
 /**
  * Displays an entry in a tree.
@@ -113,6 +107,12 @@ public class VRMLComponentsCellRenderer extends JLabel implements TreeCellRender
     transient protected Icon shapeIcon;
     transient protected Icon boxIcon;
     transient protected Icon appearanceIcon;
+    transient protected Icon floatIcon;
+    transient protected Icon radiusIcon;
+    transient protected Icon stringIcon;
+    transient protected Icon sphereIcon;
+    transient protected Icon colorIcon;
+
 
     /**
      * Returns a new instance of DefaultTreeCellRenderer.  Alignment is
@@ -126,6 +126,11 @@ public class VRMLComponentsCellRenderer extends JLabel implements TreeCellRender
         setShapeIcon(new ImageIcon("icons/Shape.gif"));
         setMaterialIcon(new ImageIcon("icons/material.gif"));
         setBoxIcon(new ImageIcon("icons/Box.gif"));
+        setSphereIcon(new ImageIcon("icons/Sphere.gif"));
+        setRadiusIcon(new ImageIcon("icons/radius.gif"));
+        setStringIcon(new ImageIcon("icons/String.gif"));
+        setFloatIcon(new ImageIcon("icons/float.gif"));
+        setColorIcon(new ImageIcon("icons/color.gif"));
         //setIcon(new ImageIcon("/Appearance.gif"));
         setClosedIcon(DefaultLookup.getIcon(this, ui, "Tree.closedIcon"));
         setOpenIcon(DefaultLookup.getIcon(this, ui, "Tree.openIcon"));
@@ -214,8 +219,50 @@ public class VRMLComponentsCellRenderer extends JLabel implements TreeCellRender
     }
 
     public Icon getShapeIcon() {
-       return shapeIcon;
+        return shapeIcon;
+    }
+    public void setColorIcon(Icon newIcon) {
+        colorIcon = newIcon;
 }
+
+    public Icon getColorIcon() {
+        return colorIcon;
+    }
+
+    public void setStringIcon(Icon newIcon) {
+        stringIcon = newIcon;
+    }
+
+    public Icon getStringIcon() {
+        return stringIcon;
+    }
+
+    public void setRadiusIcon(Icon newIcon) {
+        radiusIcon = newIcon;
+    }
+
+    public Icon getRadiusIcon() {
+        return radiusIcon;
+    }
+
+    public void setFloatIcon(Icon newIcon) {
+        floatIcon = newIcon;
+    }
+
+    public Icon getFloatIcon() {
+        return floatIcon;
+    }
+
+
+    public void setSphereIcon(Icon newIcon) {
+        sphereIcon = newIcon;
+    }
+
+
+
+    public Icon getSphereIcon() {
+        return sphereIcon;
+    }
     public void setAppearanceIcon(Icon newIcon) {
         appearanceIcon = newIcon;
     }
@@ -414,7 +461,18 @@ public class VRMLComponentsCellRenderer extends JLabel implements TreeCellRender
             icon = getMaterialIcon();
         } else if("appearance".equals(value.toString())){
             icon = getAppearanceIcon();
-        } else if (expanded) {
+        } else if("geometry".equals(value.toString())){
+            icon=getSphereIcon();
+        } else if("radius".equals(value.toString())){
+            icon=getRadiusIcon();
+        } else if("length".equals(value.toString())||"maxExtent".equals(value.toString())){
+            icon=getFloatIcon();
+        } else if("string".equals(value.toString())){
+            icon=getStringIcon();
+        }  else if("diffuseColor".equals(value.toString())){
+            icon=getColorIcon();
+        }
+        else if (expanded) {
             icon = getOpenIcon();
         }
           else if(leaf){
