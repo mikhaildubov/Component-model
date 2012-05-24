@@ -8,11 +8,13 @@ public class VRMLParserTest extends ParserTest {
     public void testParse() throws FileNotFoundException {
         
         parserTest(new VRMLParser(), "test\\Example.wrl");
-
-        System.out.print("------------------------------------------------------");
-        System.out.println("------------------------------------------------------\n");
         
         parserTest(new VRMLParser(), "test\\Example2.wrl");
+    }
+    
+    public void testParseLargeFile() throws FileNotFoundException {
+        
+        parserTest(new VRMLParser(), "test\\CALF.wrl");
     }
     
     public void testParseErrors() throws FileNotFoundException {

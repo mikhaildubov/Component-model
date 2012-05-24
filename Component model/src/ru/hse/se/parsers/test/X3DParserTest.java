@@ -9,8 +9,6 @@ public class X3DParserTest extends ParserTest {
 
         parserTest(new X3DParser(), "test\\Example.x3d");
         
-        System.out.println("------------------------------------------------------");
-        
         parserTest(new X3DParser(), "test\\Example2.x3d");
     }
     
