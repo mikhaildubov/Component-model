@@ -7,7 +7,7 @@
     </Shape>
     
     <Shape>
-        <Material />
+        <Material DEF='mat' />
     </Shape>
     
     <Shape>

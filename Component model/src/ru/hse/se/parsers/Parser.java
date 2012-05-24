@@ -22,9 +22,10 @@ public abstract class Parser {
      * @param reader The input stream reader
      * @return nodes array of root nodes
      * @throws IOException if there is no input in the stream
+     * @throws If the parser cannot process some errors
      */
     public ArrayList<Node> parse(InputStreamReader reader)
-                                throws IOException {
+                                throws IOException, Error {
 
         tokenizer = new StreamTokenizer(new BufferedReader(reader));
         
@@ -266,9 +267,14 @@ public abstract class Parser {
      * Processes a parsing error.
      * 
      * @param e the error object
+     * @throws Error if there are too many errors
      */
-    public boolean registerError(ParsingError e) {
+    public boolean registerError(ParsingError e) throws Error {
 
+        if (parsingErrors.size() >= 128) {
+            throw new Error("Too many errors during parsing");
+        }
+        
         if (e != null) {
             parsingErrors.add(e);
         }

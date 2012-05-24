@@ -55,7 +55,7 @@ public class VRMLParser extends Parser {
      *      statements                  *
      ************************************/
     @Override
-    protected void parseScene() throws IOException {
+    protected void parseScene() throws IOException, Error {
         
         parseStatements();
         

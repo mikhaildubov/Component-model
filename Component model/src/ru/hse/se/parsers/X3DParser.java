@@ -48,10 +48,10 @@ public class X3DParser extends Parser {
     
     /**
      * Performs the parsing of the input file
-     * and returns an ArrayList of root nodes.
+     * and fills in an ArrayList of root nodes.
      */
     @Override
-    protected void parseScene() throws IOException {
+    protected void parseScene() throws IOException, Error {
 
         parseXML();
         
@@ -220,14 +220,13 @@ public class X3DParser extends Parser {
                     // Child node is some field of the parent node.
                     // To determine which field is to be set,
                     // we use the containterField property.
-                    
                     Node parentNode = currentNodes.peek();
                     String field = currentNode.containerField();
                     
                     // Linking between the scene graph and the source code
                     // through line numbers for each property.
                     parentNode.setFieldDescriptionLine(field, tokenizer.lineno());
-                    
+                   
                     Class<?> currentFieldType = parentNode.getClass().
                             getDeclaredMethod("get" +
                             Character.toUpperCase(field.charAt(0)) +
@@ -328,6 +327,12 @@ public class X3DParser extends Parser {
             Node currentNode = currentNodes.peek();
             currentNode.setId(lookahead);
             
+            // Warning if the named node is already defined
+            if (defNodesTable.containsKey(lookahead)) {
+                registerError(new Warning("Node named '" + lookahead +
+                      "' is already defined", tokenizer.lineno()));
+            }
+            
             defNodesTable.put(lookahead, currentNode);
             
             nextToken();
@@ -378,7 +383,7 @@ public class X3DParser extends Parser {
                 currentNodes.push(node);
                 
             } else {
-
+                
                 registerError(new SyntaxError("Node named '" + lookahead +
                         "' is not declared.", tokenizer.lineno()));
             }
@@ -495,9 +500,16 @@ public class X3DParser extends Parser {
                 invoke(currentNode, attrValue);
 
         } catch (Exception e) {
+            
             registerError(new ParsingError
               ("Could not set the value of field " + name,
                                       tokenizer.lineno()));
+
+            // Some panic-mode recovery
+            while (! (lookahead(">") || lookahead("<") ||
+                    lookahead == null)) {
+                nextToken();
+            }
         }
     }
 
