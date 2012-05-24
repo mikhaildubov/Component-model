@@ -26,7 +26,7 @@ public class X3DCodeGenerator extends CodeGenerator {
      * @param output the output stream
      */
     public void generate(ArrayList<Node> sceneGraph, PrintStream output) {
-        
+
         defNodes = new HashSet<String>();
         nodes = new Stack<Node>();
         this.output = output;
@@ -41,6 +41,7 @@ public class X3DCodeGenerator extends CodeGenerator {
         output.println("</Scene>");
     }
     
+    @SuppressWarnings("rawtypes")
     private void process(Node n) {
         
         nodes.push(n);
@@ -78,7 +79,7 @@ public class X3DCodeGenerator extends CodeGenerator {
                     
                     // Value type => attribute
                     if (ValueType.class.isAssignableFrom(m.getReturnType())) {
-                        
+
                         String field = Character.toLowerCase(m.getName().charAt(3)) + 
                                         m.getName().substring(4);
                         
@@ -86,14 +87,17 @@ public class X3DCodeGenerator extends CodeGenerator {
                         
                         // MFNodes - processed later
                         if (! (value instanceof MFNode)) {
-                            
+
                             // Different patterns of printing values (!)
                             if (value instanceof MFValueType) {
                                 // Erasing '[' and ']'
                                 output.print(" " + field + "='" + 
-                                        value.toString().substring(2,
-                                        value.toString().length()-2) + "'");
+                                   ((((MFValueType)value).size()) > 0 ?
+                                   (value.toString().substring(2,
+                                   value.toString().length()-2)) : "")
+                                   + "'");
                             } else {
+                                
                                 output.print(" " + field + "='" + value + "'");
                             }
                         }
@@ -109,17 +113,19 @@ public class X3DCodeGenerator extends CodeGenerator {
                     
                     // Nested nodes
                     if (Node.class.isAssignableFrom(m.getReturnType())) {
-                        
+
                         Node child = (Node)m.invoke(n);
+
                         if (child != null) {
                             process(child);
                         }
                     }
                     // MFNodes
                     else if (MFNode.class.isAssignableFrom(m.getReturnType())) {
-                        
+
                         String field = Character.toLowerCase(m.getName().charAt(3)) + 
-                                        m.getName().substring(4);                        
+                                        m.getName().substring(4); 
+                        
                         MFNode value = (MFNode)m.invoke(n);
                         
                         nodes.push(null); // Fake node; just for code indent

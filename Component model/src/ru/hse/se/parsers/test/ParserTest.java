@@ -1,9 +1,9 @@
 package ru.hse.se.parsers.test;
 
-import ru.hse.se.nodes.Node;
+import ru.hse.se.nodes.*;
 import ru.hse.se.parsers.Parser;
 import ru.hse.se.parsers.errors.*;
-import ru.hse.se.types.ValueType;
+import ru.hse.se.types.*;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
