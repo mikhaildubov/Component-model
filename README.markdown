@@ -1,7 +1,7 @@
 <h1>Component model with declarative type definition</h1>
 
 <p>The project is targeted at constructing a component model using its declarative description. The goal is to build a set of connected <a href="http://www.oracle.com/technetwork/java/javase/tech/index-jsp-138795.html">JavaBeans</a> components, called the <em>scene graph</em>. The interactions between components are described in a declarative language, either <a href="http://www.web3d.org/x3d/specifications/vrml/">VRML</a> or <a href="http://en.wikipedia.org/wiki/XML">XML</a>. Then, a special <em>front-end</em> visualizes the scene graph and allows the user to change the properties of the components as well as the connections between them. </p>
-<p>The main features are:</p><br
+<p>The main features are:</p><br/>
 <ul>
 <li> 2 parsers for VRML and X3D built using 2 different algorithms;
 <li> Probably the best error diagnostic tools incorporated into the parsers;
