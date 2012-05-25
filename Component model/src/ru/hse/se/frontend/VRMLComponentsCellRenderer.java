@@ -465,11 +465,11 @@ public class VRMLComponentsCellRenderer extends JLabel implements TreeCellRender
             icon=getSphereIcon();
         } else if("radius".equals(value.toString())){
             icon=getRadiusIcon();
-        } else if("length".equals(value.toString())||"maxExtent".equals(value.toString())){
+        } else if("length".equals(value.toString())||"maxExtent".equals(value.toString())||"transparency".equals(value.toString())||"shininess".equals(value.toString())||"ambientIntentity".equals(value.toString())){
             icon=getFloatIcon();
         } else if("string".equals(value.toString())){
             icon=getStringIcon();
-        }  else if("diffuseColor".equals(value.toString())){
+        }  else if("diffuseColor".equals(value.toString())||"specularColor".equals(value.toString())||"emissiveColor".equals(value.toString())){
             icon=getColorIcon();
         }
         else if (expanded) {

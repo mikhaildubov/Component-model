@@ -1,9 +1,6 @@
 package ru.hse.se.frontend;
 
-import java.util.Date;
-import java.util.Vector;
-
-import ru.hse.se.frontend.Components.*;
+import ru.hse.se.frontend.Components.ThisNode;
 
 
 /**
@@ -42,32 +39,21 @@ public class ComponentsModel extends DynamicTreeTableModel {
     public ComponentsModel(ThisNode root) {
 	super(root, columnNames, methodNames, setterMethodNames, classes);
     }
+    public boolean isCellEditable(Object node, int column) {
+        switch (column) {
+            case 0:
+                // Allow editing of the name, as long as not the root.
+                return (node != getRoot());
+            case 1:
+                // Allow editing of the location, as long as not a
+                // directory
+                return false;
+            default:
+                // Don't allow editing of the date fields.
+                return false;
+        }
+    }
 
-    /**
-     * <code>isCellEditable</code> is invoked by the JTreeTable to determine
-     * if a particular entry can be added. This is overridden to return true
-     * for the first column, assuming the node isn't the root, as well as
-     * returning two for the second column if the node is a ThisValue.
-     * For all other columns this returns false.
-     *
-     */
 
-
-    //Under construction
-
-
-   /* @Override
-    public Class getColumnClass(int column) {
-        if (classes == null || column < 0 || column >= classes.length) {
-            return null;
-        }else if(column==0)
-            return TreeTableModel.class;
-            else if(column==1)
-                return String.class;
-                else if(column==2)
-                    return String.class;
-        else
-        return classes[column];
-    }*/
 }
 

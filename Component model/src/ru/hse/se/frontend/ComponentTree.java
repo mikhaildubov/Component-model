@@ -4,16 +4,11 @@ import ru.hse.se.nodes.Node;
 import ru.hse.se.parsers.VRMLParser;
 
 import javax.swing.*;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -23,8 +18,8 @@ import java.util.ArrayList;
  *
  * @author Tim Akhmetgareev
  */
-public class TreeTableExample3 {
-    /** Number of instances of TreeTableExample3. */
+public class ComponentTree {
+    /** Number of instances of ComponentTree. */
     private static int         ttCount;
 
     /** Used to represent the model. */
@@ -32,21 +27,28 @@ public class TreeTableExample3 {
     /** Frame containing everything. */
     private JFrame             frame;
 
-     ArrayList<Node> nodes;
+
 
     private JPanel panel;
     /** Path created for. */
     private String             path;
     JTextArea textArea;
+     static ArrayList<Node> nodes;
+    static String oldValue;
+    static String newValue;
+    JTextArea jTextArea;
+
 
     /**
-     * Creates a TreeTableExample3, loading the Components from the file
+     * Creates a ComponentTree, loading the Components from the file
      * at <code>path</code>.
      */
-    public TreeTableExample3(String path) {
+    public ComponentTree(String path) {
 	this.path = path;
 	ttCount++;
-
+        jTextArea=new JTextArea();
+        textArea=new JTextArea();
+    redirectSystemStreams();
 	frame = createFrame();
 	Container       cPane = frame.getContentPane();
 	JMenuBar        mb = createMenuBar();
@@ -56,7 +58,7 @@ public class TreeTableExample3 {
         cPane.setLayout(new BorderLayout(5,5));
         Dimension dim=new Dimension(600, 600);
         cPane.setPreferredSize(dim);
-        textArea=new JTextArea();
+
 
         try {
             textArea.read(new FileReader(path),null);
@@ -64,20 +66,25 @@ public class TreeTableExample3 {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         treeTable = createTreeTable(model);
-      //  textArea.setEditable(false);
+        textArea.setEditable(false);
 
         JScrollPane tp =new JScrollPane(textArea,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         JScrollPane sp = new JScrollPane(treeTable,ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane cp=new JScrollPane(jTextArea,ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         sp.getViewport().setBackground(Color.white);
 
         Dimension scrDim=new Dimension(300,600);
+        Dimension dime=new Dimension(300,400) ;
+        Dimension dimc=new Dimension(300,200);
         sp.setLocation(0,0);
-        sp.setPreferredSize(scrDim);
+        sp.setPreferredSize(dime);
         tp.setLocation(300,0);
         tp.setPreferredSize(scrDim);
-       //textArea.append(model.toString());
+        cp.setLocation(0,400);
+        cp.setPreferredSize(dimc);
 	    cPane.add(sp, BorderLayout.LINE_START);
      cPane.add(tp, BorderLayout.CENTER);
+        cPane.add(cp,BorderLayout.PAGE_END);
         cPane.setPreferredSize(dim);
 
 
@@ -89,6 +96,35 @@ public class TreeTableExample3 {
     }
 
 
+    private void updateTextArea(final String text) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                jTextArea.append(text);
+            }
+        });
+    }
+
+    private void redirectSystemStreams() {
+        OutputStream out = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                updateTextArea(String.valueOf((char) b));
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                updateTextArea(new String(b, off, len));
+            }
+
+            @Override
+            public void write(byte[] b) throws IOException {
+                write(b, 0, b.length);
+            }
+        };
+
+        System.setOut(new PrintStream(out, true));
+        System.setErr(new PrintStream(out, true));
+    }
 
     /**
      * Creates and returns the instanceof JTreeTable that will be used.
@@ -101,28 +137,8 @@ public class TreeTableExample3 {
 	treeTable.setDefaultRenderer(Object.class,
 				     new ComponentsStringRenderer());
         treeTable.getTree().setCellRenderer(new VRMLComponentsCellRenderer());
-        treeTable.getTree().getModel().addTreeModelListener(new TreeModelListener() {
-            @Override
-            public void treeNodesChanged(TreeModelEvent e) {
-                saveToFile(path);
-            }
 
-            @Override
-            public void treeNodesInserted(TreeModelEvent e) {
-                //To change boy of implemented methods use File | Settings | File Templates.
-            }
 
-            @Override
-            public void treeNodesRemoved(TreeModelEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public void treeStructureChanged(TreeModelEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-        });
        /* treeTable.getTree().addTreeSelectionListener(new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
@@ -178,7 +194,7 @@ public class TreeTableExample3 {
 		if (result == JFileChooser.APPROVE_OPTION) {
 		    String      newPath = fc.getSelectedFile().getPath();
 
-		    new TreeTableExample3(newPath);
+		    new ComponentTree(newPath);
 
 		}
 	    }
@@ -261,7 +277,7 @@ public class TreeTableExample3 {
 	if (args.length > 0) {
 	    // User is specifying the Component file to show.
 	    for (int counter = args.length - 1; counter >= 0; counter--) {
-		new TreeTableExample3(args[counter]);
+		new ComponentTree(args[counter]);
 	    }
 	}
 	else {
@@ -279,12 +295,12 @@ public class TreeTableExample3 {
 		// None available, use a default.
 		path = "test/Example.wrl";
 	    }
-        new TreeTableExample3(path);
+        new ComponentTree(path);
 	}
     }
     /** Returns an ImageIcon, or null if the path was invalid. */
     protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = TreeTableExample3.class.getResource(path);
+        java.net.URL imgURL = ComponentTree.class.getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
         } else {

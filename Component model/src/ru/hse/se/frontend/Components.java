@@ -8,6 +8,8 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringBufferInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -37,16 +39,25 @@ public class Components {
         return root;
     }
     ArrayList<Node> result = null;
+    ArrayList<Node> result1=result;
     private static final short NO_ENTRY = 0;
     private static final short BOOKMARK_ENTRY = 2;
     private static final short DIRECTORY_ENTRY = 3;
     private static int lineCounter;
+    String paths;
 
+    public static ArrayList<Node> getResult(ru.hse.se.parsers.Parser parser, String s)
+    {   ArrayList<Node> result1 = null;
 
-    public ArrayList<Node> getResult(String s)
-    {
-       // parse( );
-        return result;
+        try{
+            result1 = parser.parse(new InputStreamReader(new StringBufferInputStream(s)));
+        } catch (IOException ioe) {
+            System.out.println("IOE: " + ioe);
+
+            JOptionPane.showMessageDialog(null, "Incorrect input",
+                    "Load file", JOptionPane.ERROR_MESSAGE);
+        }
+        return result1;
     }
     /**
      * The heart of the parsing. The parser parses the data and the data is
@@ -58,7 +69,7 @@ public class Components {
 
 
             result = parser.parse(new FileReader(path));
-
+            ComponentTree.nodes = result;
             System.out.println();
 
             if (result != null) {
@@ -86,8 +97,9 @@ public class Components {
         } catch (IOException ioe) {
             System.out.println("IOE: " + ioe);
             // System.out.println("\n* *");
-            JOptionPane.showMessageDialog(null, "Load file",
-                    "Something bad with the file", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Error: "+ ioe,"Load file", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
         }
 
     }
@@ -280,59 +292,69 @@ public class Components {
         }
 
         public void setValue(String value) {
-
+            ComponentTree.oldValue=this.value;
             if(getType().equals("diffuseColor"))
             {
                 try {
+
+
                     SFColor.parse(value);
                     this.value=value;
-                } catch (DataFormatException e) {
+                    ComponentTree.newValue =value;
 
-                }
+                } catch (DataFormatException e) {
+                    JOptionPane.showMessageDialog(null, "Incorrect input",
+                            "Changing option", JOptionPane.ERROR_MESSAGE);
+
+            }
             }
             if(getType().equals("radius"))
             {
                 try {
                     SFFloat.parse(value);
-                    this.value=value;
+                    this.value=value;   ComponentTree.newValue =value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    JOptionPane.showMessageDialog(null, "Incorrect input",
+                            "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("maxExtent"))
             {
                 try {
                     SFFloat.parse(value);
-                    this.value=value;
+                    this.value=value;    ComponentTree.newValue =value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    JOptionPane.showMessageDialog(null, "Incorrect input",
+                            "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("length"))
             {
                 try {
                     MFFloat.parse(value);
-                    this.value=value;
+                    this.value=value;  ComponentTree.newValue =value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input", "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("string"))
             {
                 try {
                     MFString.parse(value);
-                    this.value=value;
+                    this.value=value;  ComponentTree.newValue =value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input", "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
-            }/*
+            }
+            else this.value=value;
+            /*
             if(getType().equals("MFInt32"))
             {
                 try {
                    MFInt32.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("MFNode"))
@@ -341,7 +363,7 @@ public class Components {
                     MFNode.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
 
@@ -351,7 +373,7 @@ public class Components {
                     MFType.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("MFValueType"))
@@ -360,7 +382,7 @@ public class Components {
                     MFBool.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }*/ /*
             if(getType().equals("SFBool"))
@@ -369,7 +391,7 @@ public class Components {
                     SFBool.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("diffuseColor"))
@@ -378,7 +400,7 @@ public class Components {
                     SFColor.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("SFFloat"))
@@ -387,7 +409,7 @@ public class Components {
                     SFFloat.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("SFInt32"))
@@ -396,7 +418,7 @@ public class Components {
                     SFInt32.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             }
             if(getType().equals("SFString"))
@@ -405,7 +427,7 @@ public class Components {
                     SFString.parse(value);
                     this.value=value;
                 } catch (DataFormatException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                     JOptionPane.showMessageDialog(null, "Incorrect input",                             "Changing option", JOptionPane.ERROR_MESSAGE);
                 }
             } */
 
