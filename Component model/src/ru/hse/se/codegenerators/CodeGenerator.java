@@ -40,6 +40,13 @@ public abstract class CodeGenerator {
         try {
             
             ArrayList<Node> sceneGraph = (new VRMLParser()).parse(input);
+            
+            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            output.println("<!-- Produced by VRML to X3D converter (c) Mikhail Dubov -->");
+            output.println("<!-- Date: " + 
+                            dateFormat.format(Calendar.getInstance().getTime()) + " -->");
+            output.println();
+            
             (new X3DCodeGenerator()).generate(sceneGraph, output);
             
             return true;
@@ -51,7 +58,7 @@ public abstract class CodeGenerator {
 
     /**
      * Converts a X3D representation
-     * of the scene graph into an VRML code file.
+     * of the scene graph into a VRML code file.
      * 
      * @param input The input stream that contains X3D code
      * @param output The ouput stream for VRML code
@@ -62,7 +69,7 @@ public abstract class CodeGenerator {
             ArrayList<Node> sceneGraph = (new X3DParser()).parse(input);
             
             DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            output.println("# Produced by VRML to X3D converted made by Mikhail Dubov");
+            output.println("# Produced by X3D to VRML converter (c) Mikhail Dubov");
             output.println("# Date: " + 
                             dateFormat.format(Calendar.getInstance().getTime()));
             output.println();

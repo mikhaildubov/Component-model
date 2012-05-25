@@ -1,21 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.0//EN"
+  "http://www.web3d.org/specifications/x3d-3.0.dtd">
+
 <Scene>
     <Shape DEF='shape1'>
         <Appearance>
-            <Material DEF='mat' diffuseColor='-2e-1 -0.2' />
+            <Material DEF='mat' diffuseColor='-2e-1 -0.2' />               <!-- 2 floats, 3 needed -->
         </Appearance>
         <Sphere radius='1.2'/>
     </Shape>
     
     <Shape>
-        <Material DEF='mat' />
+        <Material DEF='mat' />                                             <!-- Type mismatch -->
     </Shape>
     
     <Shape>
-        <Appeaance DEF='app_1'>
-            <Material USE='mat />
+        <Appeaance DEF='app_1'>                                            <!-- Lexical: AppeAAnce -->
+            <Material USE='mat />                                          <!-- "'" forgotten -->
         </Appearance>
         <Text string='"VRML" "XML"'>
-            <fieldValue name='length' value=3.5, 3.0' />
+            <fieldValue name='length' value=3.5, 3.0' />                   <!-- "'" forgotten -->
         </Text>
     </Shape>
     

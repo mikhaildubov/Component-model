@@ -274,7 +274,7 @@ public abstract class Parser {
         if (parsingErrors.size() >= 128) {
             throw new Error("Too many errors during parsing");
         }
-        
+
         if (e != null) {
             parsingErrors.add(e);
         }

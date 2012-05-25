@@ -25,8 +25,6 @@ public class X3DParser extends Parser {
     protected void setUpTokenizer() {
         
         super.setUpTokenizer();
-        
-        // TODO: comments??
 
         // Terminals
         tokenizer.ordinaryChar('<');
@@ -34,6 +32,8 @@ public class X3DParser extends Parser {
         tokenizer.ordinaryChar('/');
         tokenizer.ordinaryChar('=');
         tokenizer.ordinaryChar('\''); // Reading attributes manually
+        tokenizer.ordinaryChar('!'); // Comments
+        tokenizer.ordinaryChar('?'); // Comments
 
         //tokenizer.parseNumbers(); // => No! Bad for advanced float/int32 parsing
         tokenizer.lowerCaseMode(false); // X3D is case-sensitive
@@ -112,6 +112,14 @@ public class X3DParser extends Parser {
                     nextToken();
                     match(">");
                     readingTag = false;
+                    
+                } else if (lookahead("!") || lookahead("?")) { // Comments
+                    
+                    readingTag = false;
+                    while(! lookahead(">")) {
+                        nextToken();
+                    }
+                    nextToken();
                     
                 } else {
                     currentTags.push(lookahead);
@@ -588,7 +596,8 @@ public class X3DParser extends Parser {
             
             if (ttype == '<' || ttype == '>' ||
                 ttype == '/' || ttype == '=' ||
-                ttype == '\'') {
+                ttype == '\'' || ttype == '!' ||
+                ttype == '?') {
                 // Terminals
                 lookahead = String.valueOf(((char)tokenizer.ttype));
             } else if (ttype == StreamTokenizer.TT_WORD) {
