@@ -1,7 +1,14 @@
 <h1>Component model with declarative type definition</h1>
 
 <p>The project is targeted at constructing a component model using its declarative description. The goal is to build a set of connected <a href="http://www.oracle.com/technetwork/java/javase/tech/index-jsp-138795.html">JavaBeans</a> components, called the <em>scene graph</em>. The interactions between components are described in a declarative language, either <a href="http://www.web3d.org/x3d/specifications/vrml/">VRML</a> or <a href="http://en.wikipedia.org/wiki/XML">XML</a>. Then, a special <em>front-end</em> visualizes the scene graph and allows the user to change the properties of the components as well as the connections between them. </p>
-<p>Besides, the project demonstrates the impossibility of efficient use of <a href="http://www.web3d.org/x3d/specifications/vrml/ISO-IEC-14772-VRML97/part1/concepts.html#4.8">VRML prototypes</a> within the scope of the pure Java programming language and the JavaBeans standard. Thus, is substantiates the necessity of developing a new component model with runtime definition of compound data types. That is the topic of a research project which is held now by <a href="http://se.hse.ru/">Software Engineering department</a> of Higher School of Economics. </p><br/>
+<p>The main features are:</p><br
+<ul>
+<li> 2 parsers for VRML and X3D built using 2 different algorithms;
+<li> Probably the best error diagnostic tools incorporated into the parsers;
+<li> Codegenerators, which enable conversion between VRML and X3D formats;
+<li> A front-end that visualizes the declarative description of component models.
+</ul>
+<br/>
 
 <h2>VRML Parser</h2>
 
@@ -40,7 +47,8 @@ textNode(text)</code></pre>
 <br/><br/>
 
 <h2>Front-end</h2>
-<em>Under construction</em>
+<p>The front-end allows one to visualize component models using the scene graph produced by one of the parsers.</p>
+<img src = "http://s019.radikal.ru/i605/1205/b6/97a67257d88c.png" hspace = "5"/>
 <br/><br/>
 
 <h2>Documentation</h2>
